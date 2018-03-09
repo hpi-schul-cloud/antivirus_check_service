@@ -6,6 +6,8 @@ After=multi-user.target
 Type=idle
 Environment=LC_ALL=C.UTF-8
 Environment=LANG=C.UTF-8
+User=antivirus
+Group=antivirus
 ExecStart=/usr/local/bin/antivirus scan_file
 Restart=always
 RestartSec=3

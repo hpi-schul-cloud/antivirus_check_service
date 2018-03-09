@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import pwd
 import json
 import time
 import logging
@@ -13,8 +12,6 @@ from pprint import pformat
 
 class ScanHandler(object):
     def __init__(self, settings):
-        self.clamav_uid = pwd.getpwnam('clamav').pw_uid
-        self.clamav_gid = pwd.getpwnam('clamav').pw_gid
         self.settings = settings
         self.config = settings.config[settings.env]
 
@@ -44,7 +41,7 @@ class ScanFileHandler(ScanHandler):
             raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, 2**(i+1) - 1))
 
         tmpfile = tempfile.NamedTemporaryFile()
-        os.chown(tmpfile.name, self.clamav_uid, self.clamav_gid)
+        os.chmod(tmpfile.name, 0o640)
 
         logging.info('Create file')
         logging.info(tmpfile.name)

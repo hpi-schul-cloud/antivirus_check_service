@@ -28,6 +28,8 @@ install_packages:
 	service clamav-daemon start
 
 systemctl_install:
+	useradd -r antivirus
+	usermod -a -G antivirus clamav
 	cp ./resources/antivirus-webserver.service /lib/systemd/system/antivirus-webserver.service
 	cp ./resources/antivirus-scanfile.service /lib/systemd/system/antivirus-scanfile.service
 	cp ./resources/antivirus-scanurl.service /lib/systemd/system/antivirus-scanurl.service
