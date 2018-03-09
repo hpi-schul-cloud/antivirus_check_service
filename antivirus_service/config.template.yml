@@ -6,7 +6,7 @@ develop:
   virustotal:
     api_key: <virustotal-api-key>
   amqp:
-    url: amqp://<username>:<password>@localhost/%2fantivirus
+    url: amqp://<username>:<password>@localhost/antivirus
     scan_file:
       queue: scan_file
       routing_key: scan_file
