@@ -1,0 +1,4 @@
+{
+  "download_uri": "http://localhost:7000/uninfectedfile",
+  "callback_uri": "http://localhost:7000/report"
+}

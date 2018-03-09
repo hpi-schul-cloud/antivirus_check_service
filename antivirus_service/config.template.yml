@@ -1,0 +1,12 @@
+---
+develop:
+  virustotal:
+    api_key: <virustotal-api-key>
+  amqp:
+    url: amqp://<username>:<password>@localhost/%2fantivirus
+    scan_file:
+      queue: scan_file
+      routing_key: scan_file
+    scan_url:
+      queue: scan_url
+      routing_key: scan_url

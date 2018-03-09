@@ -1,0 +1,14 @@
+[Unit]
+Description=Antivirus Service Using Clamav
+After=multi-user.target
+
+[Service]
+Type=idle
+Environment=LC_ALL=C.UTF-8
+Environment=LANG=C.UTF-8
+ExecStart=/usr/local/bin/antivirus scan_file
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

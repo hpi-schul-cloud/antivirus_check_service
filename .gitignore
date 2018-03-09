@@ -1,0 +1,7 @@
+.vagrant
+.vscode
+*egg-info
+*.log
+*__pycache__
+tests/
+antivirus_service/config.yml
