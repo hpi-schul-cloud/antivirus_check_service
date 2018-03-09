@@ -1,5 +1,8 @@
 ---
 develop:
+  webserver:
+    auth_users:
+      - <username>:<password>
   virustotal:
     api_key: <virustotal-api-key>
   amqp:

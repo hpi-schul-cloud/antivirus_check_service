@@ -45,14 +45,14 @@ A GET request to `https://<antivirus-check-service>/` gives a detailed usage api
 ~~~
 
 ### AMQP
-The __Antivirus Check Service__ provides an AMQP API as well (which is uses by the WebAPI as well). 
-Authenticate and Publish a message to the regarding queue:
+The __Antivirus Check Service__ provides an AMQP API, which is uses by the WebAPI as well. 
+Authenticate and publish a message to the regarding queue using the routing_key:
 
-- url: `amqp://<user>:<password>@<antivirus-check-service>/%2fantivirus`
+- url: `amqp://<user>:<password>@<antivirus-check-service>/antivirus`
 
 #### scan file:
  - routing key: `scan_file`
- - payload:
+ - message:
     ~~~json
     {
       "download_uri": "https://<uri-to-file>",
@@ -62,7 +62,7 @@ Authenticate and Publish a message to the regarding queue:
 
 #### scan file:
  - routing key: `scan_url`
- - payload:
+ - message:
     ~~~json
     {
       "url": "https://<url-to-be-scanned>",

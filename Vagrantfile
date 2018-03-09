@@ -9,12 +9,12 @@ apt install -y python3 rabbitmq-server amqp-tools make git
 rabbitmq-plugins enable rabbitmq_management
 
 # set rabbitmq user, vhost and queue
-rabbitmqctl add_vhost /antivirus
+rabbitmqctl add_vhost antivirus
 rabbitmqctl add_user mwiesner geheim
-rabbitmqctl set_permissions -p /antivirus mwiesner ".*" ".*" ".*"
+rabbitmqctl set_permissions -p antivirus mwiesner ".*" ".*" ".*"
 rabbitmqctl set_user_tags mwiesner administrator
-rabbitmqadmin declare queue --vhost=/antivirus name=scan_file durable=true -u mwiesner -p geheim
-rabbitmqadmin declare queue --vhost=/antivirus name=scan_url durable=true -u mwiesner -p geheim
+rabbitmqadmin declare queue --vhost=antivirus name=scan_file durable=true -u mwiesner -p geheim
+rabbitmqadmin declare queue --vhost=antivirus name=scan_url durable=true -u mwiesner -p geheim
 
 # install antivirus service
 cd /vagrant
