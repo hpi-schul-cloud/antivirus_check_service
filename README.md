@@ -1,7 +1,7 @@
 # Antivirus Check Service
 
-__Antivirus Check Service__ provides the ability to scan files against a local installed clamav daemon. Furthermore  this service provides an URL scan using [virustotal](https://www.virustotal.com).
-The __Antivirus Check Service__ processes incoming scan requests and reports the scan result to a given webhook.
+The __Antivirus Check Service__ provides the ability to scan files with a locally installed clamav daemon. In addition, the service offers a URL scan using [virustotal](https://www.virustotal.com).
+The __Antivirus Check Service__ processes incoming scan requests and sends the scan result to a specified web hook.
 
 ## Usage
 __Antivirus Check Service__ provides two interfaces.
