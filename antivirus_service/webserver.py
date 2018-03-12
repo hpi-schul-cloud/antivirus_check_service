@@ -4,10 +4,11 @@ import time
 import base64
 import logging
 import aio_pika
-
 from aiohttp import web
 from pprint import pformat
 from functools import wraps
+
+from antivirus_service.clamd import Clamd
 
 
 def auth_required(f):
@@ -28,6 +29,7 @@ class Webserver(object):
     def __init__(self, settings):
         self.settings = settings
         self.amqp_config = settings.config[settings.env]['amqp']
+        self.clamd = Clamd(settings)
         self.auth_keys = [
             base64.b64encode(bytes(entry, 'utf-8')).decode('ascii') 
                 for entry in settings.config[settings.env]['webserver']['auth_users']]
@@ -37,6 +39,7 @@ class Webserver(object):
         app.router.add_get('/', self.index)
         app.router.add_post('/scan/file', self.handle_file)
         app.router.add_post('/scan/url', self.handle_uri)
+        app.router.add_get('/antivirus-version', self.handle_version)
 
         app.on_startup.append(self.on_startup)
         app.on_shutdown.append(self.on_shutdown)
@@ -88,7 +91,12 @@ class Webserver(object):
                         "description": "Complete Uri to the callback uri"
                     },
                 }
-            }
+            },
+            "clamav daemon version": {
+                "description": "Get clamav daemon version and last database update",
+                "path": "/antivirus-version",
+                "method": "GET"
+            },
         }
         return web.json_response(doc)
 
@@ -134,3 +142,7 @@ class Webserver(object):
         await self.channel.default_exchange.publish(
             aio_pika.Message(body=body), routing_key=self.amqp_config['scan_url']['routing_key']
         )
+
+    @auth_required
+    async def handle_version(self, request):
+        return web.json_response(self.clamd.get_version())

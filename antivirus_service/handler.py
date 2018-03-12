@@ -1,23 +1,21 @@
 # -*- coding: utf-8 -*-
-import os
 import json
 import time
 import logging
-import pyclamd
 import requests
-import tempfile
 
-from pprint import pformat
+from antivirus_service.clamd import Clamd
 
 
 class ScanHandler(object):
     def __init__(self, settings):
         self.settings = settings
         self.config = settings.config[settings.env]
+        self.clamd = Clamd(settings)
 
 
 class ScanFileHandler(ScanHandler):
-    def download_file(self, download_uri, access_token):
+    def scan(self, download_uri, access_token):
         headers = {}
         if access_token:
             headers['Authorization'] = 'Bearer %s' % access_token
@@ -40,28 +38,7 @@ class ScanFileHandler(ScanHandler):
         else:
             raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, 2**(i+1) - 1))
 
-        tmpfile = tempfile.NamedTemporaryFile()
-        os.chmod(tmpfile.name, 0o640)
-
-        logging.info('Create file')
-        logging.info(tmpfile.name)
-        with open(tmpfile.name, 'wb') as f:
-            for chunk in r.iter_content(1024):
-                f.write(chunk)
-        return tmpfile
-
-    def scan_file(self, tmpfile):
-        logging.info('Start scan')
-        cd = pyclamd.ClamdAgnostic()
-        result = cd.scan_file(tmpfile.name)
-        tmpfile.close()
-
-        logging.info(result)
-        # result is None if no virus was found,
-        # otherwise: {'<path>': ('FOUND', '<signature>')}
-        if result is None:
-            return False, None
-        return True, result[tmpfile.name][1]
+        return self.clamd.scan(r)
 
     def callback(self, callback_uri, access_token, scan_result, signature):
         logging.info('Start callback')
@@ -95,8 +72,7 @@ class ScanFileHandler(ScanHandler):
         callback_uri = payload['callback_uri']
         access_token = payload.get('access_token', None)
 
-        tmpfile = self.download_file(download_uri, access_token)
-        scan_result, signature = self.scan_file(tmpfile)
+        scan_result, signature = self.scan(download_uri, access_token)
         self.callback(callback_uri, access_token, scan_result, signature) 
 
 

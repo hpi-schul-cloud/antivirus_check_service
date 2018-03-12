@@ -1,5 +1,9 @@
 ---
 develop:
+  clamd:
+    type: <unix|network>
+    host: 127.0.0.1  # only, if network
+    port: 3310       # only, if network
   webserver:
     auth_users:
       - <username>:<password>

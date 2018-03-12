@@ -41,7 +41,18 @@ A GET request to `https://<antivirus-check-service>/` gives a detailed usage api
             "description": "Complete Uri to the callback uri"
         },
     }
-}
+},
+"clamav daemon version": {
+    "description": "Get clamav daemon version and last database update",
+    "path": "/antivirus-version",
+    "method": "GET"
+},
+~~~
+
+To get the clamav daemon version and last database update, you can send a request to the WebAPI `/antivirus-version`.
+The response is similar to:
+~~~json
+{"clamd-version": "0.99.2/24389/Tue", "clamd-database-version": "2018/03/13 - 08:12:22"}
 ~~~
 
 ### AMQP
@@ -116,7 +127,15 @@ directory and run as `root`: `make install`. This will install all necessary
 packages.
 
 - Copy `/antivirus_service/config.template.yml` to `/antivirus_service/config.yml`
-  and adjust the config file
+  and adjust the config file.
+  It is possible to connect to clamav daemon over network. For this, the clamd has to be configured:
+  Append the config values to `/etc/clamav/clamd.conf`
+  ```
+  TCPSocket 3310
+  TCPAddr 0.0.0.0
+  ```
+  **Attention!** By default the `StreamMaxLength` value is set to 25M. Bigger files will be not excepted.
+
 - Add `auth_keys` to the webserver section, format: `<username>:<password>`
 - The python setup routine installs the packages locally (the clone path) and
   creates a link to `/usr/local/bin/antivirus`
