@@ -94,6 +94,11 @@ The reports are PUT requests to the given webhook Uri. The payload differs reagr
 {"blacklisted": "<true|false>", "full_report": "<virustotal's full report>"}
 ~~~
 
+### Error
+If an error occures the __Antivirus Check Service__ will try to send an error page (500) with the error message as json:
+~~~json
+{"error": "<error message>"}
+~~~
 
 ## Install
 As prerequisite you have to have installed: `git` and `make`.
