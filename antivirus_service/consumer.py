@@ -18,8 +18,8 @@ class ScanConsumer(object):
             payload = self.handler.parse_body(body)
         except Exception as e:
             # wrong body, log this error but give ack anyway
-            logging.error("An exception occured: '{0}' with payload: {1}".format(str(e), body))
             ch.basic_ack(delivery_tag=method.delivery_tag)
+            self.handler.handle_error_message(payload, e)
         else:
             # here we can decide, based on the exception type, if we re-enqueue the task
             # but currently we don't re-enqueue, but log this error (and/or email)
@@ -27,7 +27,7 @@ class ScanConsumer(object):
             try:
                 self.handler.handle_message(payload)
             except Exception as e:
-                logging.error("An exception occured: '{0}' with handling scan request: {1}".format(str(e), body))
+                self.handler.handle_error_message(payload, e)
 
     def run(self):
         params = pika.URLParameters(self.amqp_url)

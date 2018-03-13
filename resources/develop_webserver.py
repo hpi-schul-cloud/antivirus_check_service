@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
+import os
 from aiohttp import web
+from concurrent.futures._base import CancelledError
 
 
 class Webserver(object):
     def run(self, port=7000):
         app = web.Application()
         app.router.add_get('/', self.index)
-        app.router.add_get('/uninfectedfile', self.handle_uninfected_file)
-        app.router.add_get('/infectedfile', self.handle_infected_file)
+        app.router.add_get('/scanfile', self.handle_scanfile)
         app.router.add_put('/report', self.handle_report)
 
         app.on_startup.append(self.on_startup)
@@ -31,23 +32,33 @@ class Webserver(object):
             'get infected file request': {
                 'description': 'returns an infected file',
                 'method': 'GET',
-                'path': '/infectedFile'
+                'path': '/scanfile',
+                'params': {
+                    'desc': 'files name - in resources folder',
+                    'name': 'name'
+                }
             },
-            'get uninfected file request': {
-                'description': 'returns an uninfected file',
-                'method': 'GET',
-                'path': '/uninfectedFile'
-            }
         }
         return web.json_response(doc)
 
-    async def handle_infected_file(self, request):
-        headers = {'content-type': 'application/octed-stream'}
-        return web.Response(headers=headers, text=open('./virus.txt').read())
+    def handle_scanfile(self, request):
+        path = './' + request.rel_url.query['name']
+        statinfo = os.stat(path)
 
-    async def handle_uninfected_file(self, request):
-        headers = {'content-type': 'application/octed-stream'}
-        return web.Response(headers=headers, text=open('./no_virus.txt').read())
+        response = web.StreamResponse()
+        response.content_length = statinfo.st_size
+        response.content_type = 'application/octet-stream'
+        yield from response.prepare(request)
+
+        try:
+            with open(path, 'rb') as f:
+                while True:
+                    chunk = f.read(2048)
+                    if not chunk:
+                        return response
+                    response.write(chunk)
+        finally:
+            yield from response.write_eof() 
 
     async def handle_report(self, request):
         msg =  '--- Scan Request Result ---\n'

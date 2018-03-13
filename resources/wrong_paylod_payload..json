@@ -1,0 +1,4 @@
+{
+  "download_uri": "http://unreachable",
+  "callback_uri": "http://localhost:7000/report"
+}

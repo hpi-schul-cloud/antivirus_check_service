@@ -5,6 +5,11 @@ import logging
 import tempfile
 from datetime import datetime
 
+from antivirus_service.pyclamd_overrride import scan_stream_overload
+
+# overload scan_stream to use the response content iterator
+pyclamd.ClamdNetworkSocket.scan_stream = scan_stream_overload
+
 
 class Clamd(object):
     def __init__(self, settings):
@@ -21,55 +26,62 @@ class Clamd(object):
             )
         return pyclamd.ClamdUnixSocket()
 
-    def scan_file(self, filepath):
-        cd = self.get_connection()
-        result = cd.scan_file(filepath)
+    def scan_file(self, response):
+        tmpfile = tempfile.NamedTemporaryFile()
+        filepath = tmpfile.name
+
+        # had issues with reading the tempfile
+        # after clamd was updated by freshclam
+        # had to manually restart clamd!
+        # consider to set tempfile readable for all users
+        os.chmod(filepath, 0o640)
+
+        logging.info('Created file: {}'.format(filepath))
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+
+        logging.info('Start file scan')
+
+        try:
+            cd = self.get_connection()
+            result = cd.scan_file(filepath)
+        finally:
+            tmpfile.close()
 
         logging.info(result)
         # result is None if no virus was found,
         # otherwise: {'<path>': ('FOUND', '<signature>')}
+        # or {'<path>': ('ERROR', '<error message>')}
 
         if result is None:
             return False, None
-        return True, result[filepath][1]
+        elif result[filepath][0] == 'ERROR':
+            raise Exception('An error occured with the viruschecker: {}'.format(result[filepath][1]))
+        else:
+            return True, result[filepath][1]
 
-    def scan_stream(self, stream):
+    def scan_stream(self, response):
         cd = self.get_connection()
-
         logging.info('Start stream scan')
-        result = cd.scan_stream(stream)
 
-        logging.info(result)
+        result = cd.scan_stream(response)
         # result is None if no virus was found,
         # otherwise: {'stream': ('FOUND', '<signature>')}
+        # or {'stream': ('ERROR', '<error message>')}
 
         if result is None:
             return False, None
-        return True, result['stream'][1]
+        elif result['stream'][0] == 'ERROR':
+            raise Exception('An error occured with viruschecker: {}'.format(result['stream'][1]))
+        else:
+            return True, result['stream'][1]
 
     def scan(self, response):
         if self.clamd_config['type'] == 'network':
-            return self.scan_stream(response.raw.read())
+            return self.scan_stream(response)
         else:
-            tmpfile = tempfile.NamedTemporaryFile()
-
-            # had issues with reading the tempfile
-            # after clamd was updated by freshclam
-            # had to manually restart clamd!
-            # => set readable to all users
-            os.chmod(tmpfile.name, 0o644)
-
-            logging.info('Create file')
-            logging.info(tmpfile.name)
-            with open(tmpfile.name, 'wb') as f:
-                for chunk in response.iter_content(1024):
-                    f.write(chunk)
-
-            logging.info('Start file scan')
-            result = self.scan_file(tmpfile.name)
-            tmpfile.close()
-
-            return result
+            return self.scan_file(response)
 
     def get_version(self):
         cd = self.get_connection()

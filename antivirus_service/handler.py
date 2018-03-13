@@ -13,6 +13,30 @@ class ScanHandler(object):
         self.config = settings.config[settings.env]
         self.clamd = Clamd(settings)
 
+    def handle_error_message(self, payload, error_message):
+        '''
+        handles error messages
+        '''
+        logging.error('--- Start error message callback ---')
+        logging.error('Error message was: {}'.format(error_message))
+        access_token = payload.get('access_token', None)
+        callback_uri = payload.get('callback_uri', None)
+
+        if not callback_uri:
+            logging.error('On sending error message: empty callback_uri')
+            return
+
+        headers = {'status': '500 Internal Server Error'}
+
+        if access_token:
+            headers['Authorization'] = 'Bearer %s' % access_token
+
+        result = {'error': str(error_message)}
+        try:
+            requests.put(callback_uri, headers=headers, data=json.dumps(result))
+        except Exception as e:
+            logging.error("On sending error message: callback_url could not be called: {}, error message was: {}".format(callback_uri, e))
+
 
 class ScanFileHandler(ScanHandler):
     def scan(self, download_uri, access_token):
@@ -24,17 +48,19 @@ class ScanFileHandler(ScanHandler):
         # that the scan request was triggered before the file upload 
         # has been finished
         last_exception_message = ''
-        for i in range(5):
+        count = 5
+        for i in range(1, count):
             try:
                 r = requests.get(download_uri, stream=True, headers=headers)
                 if r.status_code != 200:
-                    raise Exception('Bad status code: {}'.format(r.status_code))
+                    raise Exception('Bad status code: {0}'.format(r.status_code))
                 else:
                     break
             except Exception as e:
                 last_exception_message = str(e)
-                logging.error('An exception occured "{0}"'.format(last_exception_message))
-                time.sleep(2**i)
+                logging.info('file could not downloaded: for {0} time'.format(i))
+                if i < count:
+                    time.sleep(2**i)
         else:
             raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, 2**(i+1) - 1))
 
@@ -73,7 +99,7 @@ class ScanFileHandler(ScanHandler):
         access_token = payload.get('access_token', None)
 
         scan_result, signature = self.scan(download_uri, access_token)
-        self.callback(callback_uri, access_token, scan_result, signature) 
+        self.callback(callback_uri, access_token, scan_result, signature)
 
 
 class ScanUrlHandler(ScanHandler):
