@@ -1,0 +1,20 @@
+---
+develop:
+  clamd:
+    type: network
+    host: clamav
+    port: 3310
+    directory: /shared
+  webserver:
+    auth_users:
+      - <username>:<password>
+  virustotal:
+    api_key: <virustotal-api-key>
+  amqp:
+    url: amqp://<username>:<password>@rabbitmq/antivirus
+    scan_file:
+      queue: scan_file
+      routing_key: scan_file
+    scan_url:
+      queue: scan_url
+      routing_key: scan_url

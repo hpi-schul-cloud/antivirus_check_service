@@ -9,9 +9,8 @@ from antivirus_service.clamd import Clamd
 
 class ScanHandler(object):
     def __init__(self, settings):
-        self.settings = settings
         self.config = settings.config[settings.env]
-        self.clamd = Clamd(settings)
+        self.clamd = Clamd(self.config['clamd'])
 
     def handle_error_message(self, payload, error_message):
         '''
@@ -64,7 +63,7 @@ class ScanFileHandler(ScanHandler):
         else:
             raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, 2**(i+1) - 1))
 
-        return self.clamd.scan(r)
+        return self.clamd.scan_file(r)
 
     def callback(self, callback_uri, access_token, scan_result, signature):
         logging.info('Start callback')

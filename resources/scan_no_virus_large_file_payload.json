@@ -1,4 +1,0 @@
-{
-  "download_uri": "http://localhost:7000/scanfile?name=sample.txt",
-  "callback_uri": "http://localhost:7000/report"
-}

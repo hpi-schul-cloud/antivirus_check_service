@@ -14,8 +14,7 @@ class AntivirusSettings(object):
     def __init__(self, env, debug):
         self.env = env
         self.project_root = os.path.dirname(os.path.abspath(__file__))
-        self.config = yaml.load(
-            open(os.path.join(self.project_root, 'config.yml')).read())
+        self.config = yaml.load(open('/run/secrets/config.yml').read())
 
         loglevel = logging.INFO if debug  else logging.ERROR
         logging.basicConfig(level=loglevel)

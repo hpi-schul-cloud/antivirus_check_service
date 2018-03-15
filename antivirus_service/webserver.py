@@ -27,9 +27,8 @@ def auth_required(f):
 
 class Webserver(object):
     def __init__(self, settings):
-        self.settings = settings
         self.amqp_config = settings.config[settings.env]['amqp']
-        self.clamd = Clamd(settings)
+        self.clamd_config = settings.config[settings.env]['clamd']
         self.auth_keys = [
             base64.b64encode(bytes(entry, 'utf-8')).decode('ascii') 
                 for entry in settings.config[settings.env]['webserver']['auth_users']]
@@ -54,6 +53,7 @@ class Webserver(object):
         print("Establish amqp connection and channel")
         self.connection = await aio_pika.connect_robust(self.amqp_config['url'])
         self.channel = await self.connection.channel()
+        self.clamd = Clamd(self.clamd_config)
 
     async def on_shutdown(self, app):
         print("Close amqp connection and channel")

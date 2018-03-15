@@ -1,7 +1,14 @@
 .vagrant
 .vscode
+.project
+.pydevproject
+.settings
+.idea
+*.DS_Store
+nbproject
+*__pycache__
+*.pyc
 *egg-info
 *.log
-*__pycache__
-tests/
-antivirus_service/config.yml
+tests
+secrets

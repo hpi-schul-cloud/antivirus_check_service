@@ -101,86 +101,31 @@ If an error occures the __Antivirus Check Service__ will try to send an error pa
 ~~~
 
 ## Install
-As prerequisite you have to have installed: `git` and `make`.
 
-### Rabbitmq
-It's not necessary to install rabbitmq locally, if there is a rabbitmq server on which the amqp vhost can be installed.
+Create the folder `./secrets`. 
+- Copy `./resources/config.template.yml` to `./secrets/config.yml`
+  Adjust the values in `< ... >`, this are username, passwords and other credentials.
+  Follow the step below to get the `<virustotal-api-key>`.
 
-Install rabbitmq by running these steps:
-```bash
-# install all rabbitmq-server (amqp-tools are optional)
-apt install -y rabbitmq-server amqp-tools
-
-# enable rabbitmq cli tools
-rabbitmq-plugins enable rabbitmq_management
-
-# set rabbitmq user, vhost and queue
-rabbitmqctl add_vhost antivirus
-rabbitmqctl add_user antivirus <password>
-rabbitmqctl set_permissions -p antivirus antivirus ".*" ".*" ".*"
-rabbitmqctl set_user_tags antivirus administrator
-rabbitmqadmin declare queue --vhost=antivirus name=scan_file durable=true -u antivirus -p <password>
-rabbitmqadmin declare queue --vhost=antivirus name=scan_url durable=true -u antivirus -p <password>
-```
+- Copy `./resources/rabbitmq-definitions.template.json` to `./secrets/rabbitmq-definitions.json`.
+  Adjust the amqp `<user>` and the `<sha256-hash-of-users-password>`.
+  To get the `<sha256-hash-of-users-password>` you can follow the (missleading) documentation from rabbitmq:
+  https://www.rabbitmq.com/passwords.html#computing-password-hash .
+  
+  Or you can use my tool. Change to `./resources` and run `python encrypt_rabbitmq_password.py --password="<your-rabbit-password>"` (only python2). 
 
 ### VirusTotal
 An API-Key is needed to use virustotal. To get this, an account on virustotal has to be created. The API-Key can be found in the account's settings.
 
-### Service
-`git clone` this repository to a modern debian (currently stretch). Change to the new
-directory and run as `root`: `make install`. This will install all necessary
-packages.
+### Docker-Compose
+- To start all services, you only have to to run `docker-compose up -d`
+  This will start all docker container:
+  - clamav
+  - rabbitmq
+  - webserver
+  - scanfile
+  - scanurl
+  The last three container will restart until rabbitmq is running properly (ca. 10 seconds)
 
-- Copy `/antivirus_service/config.template.yml` to `/antivirus_service/config.yml`
-  and adjust the config file.
-  It is possible to connect to clamav daemon over network. For this, the clamd has to be configured:
-  Append the config values to `/etc/clamav/clamd.conf`
-  ```
-  TCPSocket 3310
-  TCPAddr 0.0.0.0
-  ```
-  **Attention!** By default the `StreamMaxLength` value is set to 25M. Bigger files will be not excepted.
-
-- Add `auth_keys` to the webserver section, format: `<username>:<password>`
-- The python setup routine installs the packages locally (the clone path) and
-  creates a link to `/usr/local/bin/antivirus`
-- The installation process installs __Antivirus Check Service__ as three systemd
-  services (for webserver, scan_file and scan_url). 
 - __BE PATIENT!__ At the first run, freshclam has to download all signatures, which can take a 
-  while and prevent clamav-daemon from working (don't forget to restart clamav-daemon).
-- Start the service with:
-  `systemctl start antivirus-<webserver|scanfile|scanurl>.service`
-- Control the service with: `systemctl status antivirus-<webserver|scanfile|scanurl>.service`
-- The logs can be read with: `journalctl -f -u antivirus-<webserver|scanfile|scanurl>.service`
-
-## Verify installation
-- Change to the `antivirus_check_service/resources` and start the development webserver with:
-  `python3 develop_webserver.py`. The minimal webserver simulates the fileserver and listens for the webhook.
-- To initiate the scan request run: `curl -v -d@scan_virus_file_payload.json -u <username>:<password> http://<antivirus-check-service>:8080/scan/file`, 
-  whereby `scan_virus_file_payload.json` has the payload:
-  ```json
-  {
-    "download_uri": "http://localhost:7000/infectedfile",
-    "callback_uri": "http://localhost:7000/report"
-  }
-  ```
-- The develop webserver has to show an output like:
-  ```
-  ======== Running on http://0.0.0.0:7000 ========
-  (Press CTRL+C to quit)
-  --- Scan Request Result ---
-  {"virus_detected": true, "virus_signature": "Eicar-Test-Signature"}
-  ```
-
-## Update
-Change to install directory and run `make update`
-
-## Development & Testing
-
-This project can be developed and tested in a vagrant box. `debian/stretch64` is used as predefined image.
-It is strongly recommended to use the vagrant-vbguest plugin: by `vagrant plugin install vagrant-vbguest`.
-(The virtualbox guest additions provides synchronizing the sources)
-
-The vagrant command `vagrant up` starts a virtual machine and provision __Antivirus Check Service__
-within. At the end of the provision the __Antivirus Check Service__ service will
-be started.
+  while and prevent clamav-daemon from working.

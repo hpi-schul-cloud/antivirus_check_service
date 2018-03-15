@@ -13,9 +13,7 @@ pyclamd.ClamdNetworkSocket.scan_stream = scan_stream_overload
 
 class Clamd(object):
     def __init__(self, settings):
-        self.clamd_config = settings.config[settings.env].get('clamd', {
-            'type': 'unix'
-        })
+        self.clamd_config = settings
         logging.info(self.clamd_config)
 
     def get_connection(self):
@@ -27,7 +25,7 @@ class Clamd(object):
         return pyclamd.ClamdUnixSocket()
 
     def scan_file(self, response):
-        tmpfile = tempfile.NamedTemporaryFile()
+        tmpfile = tempfile.NamedTemporaryFile(dir=self.clamd_config.get('directory', None))
         filepath = tmpfile.name
 
         # had issues with reading the tempfile
@@ -60,28 +58,6 @@ class Clamd(object):
             raise Exception('An error occured with the viruschecker: {}'.format(result[filepath][1]))
         else:
             return True, result[filepath][1]
-
-    def scan_stream(self, response):
-        cd = self.get_connection()
-        logging.info('Start stream scan')
-
-        result = cd.scan_stream(response)
-        # result is None if no virus was found,
-        # otherwise: {'stream': ('FOUND', '<signature>')}
-        # or {'stream': ('ERROR', '<error message>')}
-
-        if result is None:
-            return False, None
-        elif result['stream'][0] == 'ERROR':
-            raise Exception('An error occured with viruschecker: {}'.format(result['stream'][1]))
-        else:
-            return True, result['stream'][1]
-
-    def scan(self, response):
-        if self.clamd_config['type'] == 'network':
-            return self.scan_stream(response)
-        else:
-            return self.scan_file(response)
 
     def get_version(self):
         cd = self.get_connection()
