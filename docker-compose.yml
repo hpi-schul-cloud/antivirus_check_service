@@ -17,9 +17,7 @@ services:
       - 15673:15672
 
   webserver:
-    build:
-      context: .
-      dockerfile: Dockerfile.webserver
+    image: schulcloud/antivirus_check_service.webserver
     volumes:
       - ./secrets/config.yml:/run/secrets/config.yml
     ports:
@@ -27,18 +25,14 @@ services:
     restart: always
 
   scanfile:
-    build:
-      context: .
-      dockerfile: Dockerfile.scanfile
+    image: schulcloud/antivirus_check_service.scanfile
     volumes:
       - ./shared:/shared
       - ./secrets/config.yml:/run/secrets/config.yml
     restart: always
 
   scanurl:
-    build:
-      context: .
-      dockerfile: Dockerfile.scanurl
+    image: schulcloud/antivirus_check_service.scanurl
     volumes:
       - ./secrets/config.yml:/run/secrets/config.yml
     restart: always
