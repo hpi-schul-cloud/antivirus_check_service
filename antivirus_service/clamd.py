@@ -32,7 +32,7 @@ class Clamd(object):
         # after clamd was updated by freshclam
         # had to manually restart clamd!
         # consider to set tempfile readable for all users
-        os.chmod(filepath, 0o640)
+        os.chmod(filepath, 0o666)
 
         logging.info('Created file: {}'.format(filepath))
         with open(filepath, 'wb') as f:
