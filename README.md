@@ -56,7 +56,7 @@ The response is similar to:
 ~~~
 
 ### AMQP
-The __Antivirus Check Service__ provides an AMQP API, which is uses by the WebAPI as well. 
+The __Antivirus Check Service__ provides an AMQP API, which is used by the WebAPI as well. 
 Authenticate and publish a message to the regarding queue using the routing_key:
 
 - url: `amqp://<user>:<password>@<antivirus-check-service>/antivirus`
@@ -71,7 +71,7 @@ Authenticate and publish a message to the regarding queue using the routing_key:
     }
     ~~~
 
-#### scan file:
+#### scan url:
  - routing key: `scan_url`
  - message:
     ~~~json
