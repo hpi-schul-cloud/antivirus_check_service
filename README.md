@@ -104,7 +104,7 @@ If an error occures the __Antivirus Check Service__ will try to send an error pa
 
 Create the folder `./secrets`. 
 - Copy `./resources/config.template.yml` to `./secrets/config.yml`
-  Adjust the values in `< ... >`, this are username, passwords and other credentials.
+  Adjust the values in `< ... >`, these are username, passwords and other credentials.
   Follow the step below to get the `<virustotal-api-key>`.
 
 - Copy `./resources/rabbitmq-definitions.template.json` to `./secrets/rabbitmq-definitions.json`.
@@ -125,6 +125,7 @@ An API-Key is needed to use virustotal. To get this, an account on virustotal ha
   - webserver
   - scanfile
   - scanurl
+  
   The last three container will restart until rabbitmq is running properly (ca. 10 seconds)
 
 - __BE PATIENT!__ At the first run, freshclam has to download all signatures, which can take a 
