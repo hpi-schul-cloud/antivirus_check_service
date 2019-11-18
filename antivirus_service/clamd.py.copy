@@ -25,21 +25,27 @@ class Clamd(object):
         return pyclamd.ClamdUnixSocket()
 
     def scan_file(self, response):
-        logging.info('Start scan')
-        result = "ERROR"
+        tmpfile = tempfile.NamedTemporaryFile(dir=self.clamd_config.get('directory', None))
+        filepath = tmpfile.name
+
+        # had issues with reading the tempfile
+        # after clamd was updated by freshclam
+        # had to manually restart clamd!
+        # consider to set tempfile readable for all users
+        os.chmod(filepath, 0o666)
+
+        logging.info('Created file: {}'.format(filepath))
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+
+        logging.info('Start file scan')
+
         try:
             cd = self.get_connection()
-        except pyclamd.ConnectionError:
-            logging.error('clamd: Can\'t connect to Clamd\'s network socket.')
-            return
-        try:
-            result = cd.scan_stream(response)
-        except pyclamd.BufferTooLongError:
-            logging.error('	clamd: BufferTooLongError.')
-            return
-        except pyclamd.ConnectionError:
-            logging.error('clamd: Can\'t connect to Clamd\'s network socket.')
-            return
+            result = cd.scan_file(filepath)
+        finally:
+            tmpfile.close()
 
         logging.info(result)
         # result is None if no virus was found,
@@ -48,12 +54,10 @@ class Clamd(object):
 
         if result is None:
             return False, None
-        elif result['stream'][0] == 'ERROR':
-            raise Exception('An error occured with the viruschecker: {}'.format(result['stream'][1]))
+        elif result[filepath][0] == 'ERROR':
+            raise Exception('An error occured with the viruschecker: {}'.format(result[filepath][1]))
         else:
-            return True, result['stream'][1]
-
-
+            return True, result[filepath][1]
 
     def get_version(self):
         cd = self.get_connection()
