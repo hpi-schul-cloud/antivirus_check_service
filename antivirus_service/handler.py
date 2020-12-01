@@ -39,6 +39,7 @@ class ScanHandler(object):
 
 class ScanFileHandler(ScanHandler):
     def scan(self, download_uri, access_token):
+        sleep_time = 2
         headers = {}
         if access_token:
             headers['Authorization'] = 'Bearer %s' % access_token
@@ -47,7 +48,7 @@ class ScanFileHandler(ScanHandler):
         # that the scan request was triggered before the file upload 
         # has been finished
         last_exception_message = ''
-        count = 5
+        count = 3
         for i in range(1, count):
             try:
                 r = requests.get(download_uri, stream=True, headers=headers)
@@ -59,9 +60,9 @@ class ScanFileHandler(ScanHandler):
                 last_exception_message = str(e)
                 logging.info('file could not downloaded: for {0} time'.format(i))
                 if i < count:
-                    time.sleep(2**i)
+                    time.sleep(sleep_time)
         else:
-            raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, 2**(i+1) - 1))
+            raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, sleep_time * i ))
 
         return self.clamd.scan_file(r)
 
