@@ -23,3 +23,10 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it must be on first place to allow central setting of working directory
       - uses: actions/checkout@v2
+      - name: Read version file
+        id: version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./version
+      - name: Echo version
+        run: echo Version of antivirus_service is '${{ steps.package.outputs.content }}'

@@ -20,4 +20,4 @@ RUN python3 ./setup.py develop
 ENV LC_ALL=C.UTF-8
 ENV LANG C.UTF-8
 
-CMD ["/usr/local/bin/antivirus", "scan-url"]
+CMD ["/usr/local/bin/antivirus", "scan_url"]
