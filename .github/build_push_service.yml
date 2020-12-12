@@ -1,0 +1,25 @@
+# Workflow to build and push the imgages for the schulcloud antivirus service 
+# Tagging of the images push to Docker Hub  will follow the branch based naming conventions
+# use in sc-app-ci to allow deploying the images on team machines  
+
+name: sc-app-build-push
+
+# Controls when the action will run.
+on:
+  workflow_dispatch:
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "deploy"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      # Setting environment variables here make them available for all steps
+      CI_GITHUB_TRAVISUSER_SWARMVM_KEY: ${{ secrets.CI_GITHUB_TRAVISUSER_SWARMVM_KEY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it must be on first place to allow central setting of working directory
+      - uses: actions/checkout@v2
