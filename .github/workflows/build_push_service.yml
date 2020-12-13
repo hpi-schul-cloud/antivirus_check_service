@@ -7,10 +7,17 @@ name: sc-app-build-push
 # Controls when the action will run.
 on:
   workflow_dispatch:
+    branches:
+      - develop
+      - master
+      # TODO Translate in to Github syntax:https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+      # - /^(release).*$/
+      # OPS-1664 naming convention <branch>/<JIRA-Ticket ID>-<Jira_Summary>
+      #- /^((hotfix|feature)\/[A-Z]+-[0-9]+-[a-zA-Z_]+)$/
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "deploy"
-  build:
+  # This workflow contains a single job called "build_and_push"
+  build_and_push:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     env:
@@ -20,12 +27,14 @@ jobs:
       AVSCANWEBSERVER_REPO: schulcloud-avcheck-webserver
       DOCKER_NAMESPACE: schulcloud
       AVCHECK_VERSION: ""
+      DOCKER_TAG: ""
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it must be on first place to allow central setting of working directory
       - uses: actions/checkout@v2
       - name: Read version file
+        # The version to be used for tagging the images is read out of the version file
         id: read_version
         uses: juliangruber/read-file-action@v1
         with:
@@ -34,6 +43,16 @@ jobs:
         run: |
           echo Version of antivirus_service is '${{ steps.read_version.outputs.content }}'
           echo "AVCHECK_VERSION=${{ steps.read_version.outputs.content }}" >> $GITHUB_ENV
+      - name: Assemble the Dockertag
+        # Assemble the Dockertag for the build image based on the type of the branch
+        # Same convention as implemented OPS-1664
+        # develop -> just develop_latest
+        # feature -> feature_<JIRA ID>_latest
+        # release -> release_v<AVCHECK_VERSION>_latest, (??) release_v<AVCHECK_VERSION>_GITSHA
+        # hotfix -> hotfix_<JIRA ID>_latest
+        # master -> master_v<AVCHECK_VERSION>_latest, (??) master_v<AVCHECK_VERSION>_GITSHA
+        # Use the same mechanism as in setting the version to share the DOCKER_TAG for all steps
+        # TODO implement the real steps here
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
