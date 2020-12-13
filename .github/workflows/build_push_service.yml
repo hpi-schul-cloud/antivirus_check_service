@@ -26,14 +26,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it must be on first place to allow central setting of working directory
       - uses: actions/checkout@v2
       - name: Read version file
-        id: version
+        id: read_version
         uses: juliangruber/read-file-action@v1
         with:
           path: ./version
       - name: Echo version
         run: |
-          echo Version of antivirus_service is '${{ env.AVCHECK_VERSION }}'
-          echo "AVCHECK_VERSION=${{ env.AVCHECK_VERSION }}" >> $GITHUB_ENV
+          echo Version of antivirus_service is '${{ steps.read_version.outputs.content }}'
+          echo "AVCHECK_VERSION=${{ steps.read_version.outputs.content }}" >> $GITHUB_ENV
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -43,7 +43,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-      - name: Build and push ${{ env.AVSCANFILE_REPO }}
+      - name: Build and push Scanfile
         uses: docker/build-push-action@v2.2.1
         with:
           context: .
@@ -51,7 +51,7 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.AVSCANFILE_REPO }}_v${{ env.AVCHECK_VERSION }}
-      - name: Build and push ${{ env.AVSCANURL_REPO }}
+      - name: Build and push Scanurl
         uses: docker/build-push-action@v2.2.1
         with:
           context: .
@@ -59,7 +59,7 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env.AVSCANURL_REPO }}_v${{ env.AVCHECK_VERSION }}
-      - name: Build and push ${{ env.AVSCANWEBSERVER_REPO }}
+      - name: Build and push Webserver
         uses: docker/build-push-action@v2.2.1
         with:
           context: .
