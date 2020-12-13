@@ -31,9 +31,9 @@ jobs:
         with:
           path: ./version
       - name: Echo version
-        env: 
-          AVCHECK_VERSION: ${{ steps.version.outputs.content }}
-        run: echo Version of antivirus_service is '${{ env.AVCHECK_VERSION }}'
+        run: |
+          echo Version of antivirus_service is '${{ env.AVCHECK_VERSION }}'
+          echo "AVCHECK_VERSION=${{ env.AVCHECK_VERSION }}" >> $GITHUB_ENV
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
