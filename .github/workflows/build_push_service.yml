@@ -55,5 +55,6 @@ jobs:
       - name: Manual push images
         run: |
           docker image ls
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
           docker push ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.AVSCANFILE_REPO }}_v${{ steps.version.outputs.content }}
           echo ${{ steps.docker_build.outputs.digest }}
