@@ -33,7 +33,7 @@ jobs:
       - name: Echo version
         env: 
           AVCHECK_VERSION: ${{ steps.version.outputs.content }}
-        run: echo Version of antivirus_service is '${{ AVCHECK_VERSION }}'
+        run: echo Version of antivirus_service is '${{ env.AVCHECK_VERSION }}'
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -51,7 +51,7 @@ jobs:
           file: ./Dockerfile.scanfile
           push: true
           tags: |
-            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.AVSCANFILE_REPO }}_v${{ AVCHECK_VERSION }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.AVSCANFILE_REPO }}_v${{ env.AVCHECK_VERSION }}
       - name: Build and push ${{ env.AVSCANURL_REPO }}
         id: docker_build
         uses: docker/build-push-action@v2.2.1
@@ -60,7 +60,7 @@ jobs:
           file: ./Dockerfile.scanurl
           push: true
           tags: |
-            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env.AVSCANURL_REPO }}_v${{ AVCHECK_VERSION }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env.AVSCANURL_REPO }}_v${{ env.AVCHECK_VERSION }}
       - name: Build and push ${{ env.AVSCANWEBSERVER_REPO }}
         id: docker_build
         uses: docker/build-push-action@v2.2.1
@@ -69,4 +69,4 @@ jobs:
           file: ./Dockerfile.webserver
           push: true
           tags: |
-            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.AVSCANWEBSERVER_REPO }}_v${{ AVCHECK_VERSION }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.AVSCANWEBSERVER_REPO }}_v${{ env.AVCHECK_VERSION }}
