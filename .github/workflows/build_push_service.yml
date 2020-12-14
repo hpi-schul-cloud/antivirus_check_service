@@ -11,9 +11,10 @@ on:
       - develop
       - master
       # TODO Translate in to Github syntax:https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
-      # - /^(release).*$/
+      - release/[0-9]+.[0-9]+.[0-9]+
       # OPS-1664 naming convention <branch>/<JIRA-Ticket ID>-<Jira_Summary>
-      #- /^((hotfix|feature)\/[A-Z]+-[0-9]+-[a-zA-Z_]+)$/
+      - hotfix/[A-Z]+-[0-9]+-[a-zA-Z_]+
+      - feature/[A-Z]+-[0-9]+-[a-zA-Z_]+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build_and_push"
