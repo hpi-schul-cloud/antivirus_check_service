@@ -32,7 +32,7 @@ jobs:
       AVCHECK_VERSION: ""
       DOCKER_TAG_POSTFIX: ""
       DOCKER_TAG_SHA: ""
-      JIRA_TicketID: ""l2
+      JIRA_TicketID: ""
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
