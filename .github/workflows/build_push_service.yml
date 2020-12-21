@@ -28,8 +28,11 @@ jobs:
       AVSCANURL_REPO: schulcloud-avcheck-scanurl
       AVSCANWEBSERVER_REPO: schulcloud-avcheck-webserver
       DOCKER_NAMESPACE: schulcloud
+      BRANCH_NAME: ""
       AVCHECK_VERSION: ""
-      DOCKER_TAG: ""
+      DOCKER_TAG_POSTFIX: ""
+      DOCKER_TAG_SHA: ""
+      JIRA_TicketID: ""l2
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
