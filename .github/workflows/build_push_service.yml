@@ -34,38 +34,88 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it must be on first place to allow central setting of working directory
       - uses: actions/checkout@v2
-      - uses: nelonoel/branch-name@v1.0.1
+      - name: Get Branch name
+        id: branch
+        uses: nelonoel/branch-name@v1.0.1
+      - name: Set BRANCH_NAME
+        run: echo Set BRANCH_NAME
+        # echo "BRANCH_NAME is ${{ steps.branch.outputs.BRANCH_NAME }}"
+        env:
+          BRANCH_NAME: ${{ steps.branch.outputs.BRANCH_NAME }}
+      - name: Echo BRANCH_NAME
+        run: |
+          echo ${{ github.ref }}
+          echo BRANCH_NAME is ${BRANCH_NAME}
       - name: Read version file
         # The version to be used for tagging the images is read out of the version file
         id: read_version
         uses: juliangruber/read-file-action@v1
         with:
           path: ./version
-      - name: Echo version
+      - name: Set env AVCHECK_VERSION
         run: |
-          echo Version of antivirus_service is '${{ steps.read_version.outputs.content }}'
-          echo "AVCHECK_VERSION=${{ steps.read_version.outputs.content }}" >> $GITHUB_ENV
+          echo "Version of antivirus_service is ${{ steps.read_version.outputs.content }}"
+          echo "AVCHECK_VERSION='${{ steps.read_version.outputs.content }}'" >> $GITHUB_ENV
       - name: Find JIRA ticket references
+        uses: actions-ecosystem/action-regex-match@v2
         id: jira
-        uses: AsasInnab/regex-action@v1
         with:
-          regex_pattern: 'JIR-[0-9]+'
-          regex_flags: 'gim'
-          search_string: ' My jira ticket number is JIR-12345'
-      - name: Echo JIRA reference
-        run: echo "My JIRA ticket number is ${{ steps.jira.outputs.first_match }}"      
-      - name: Assemble the Dockertag
-        # Assemble the Dockertag for the build image based on the type of the branch
-        # Same convention as implemented OPS-1664
-        # develop -> just develop_latest
-        # feature -> feature_<JIRA ID>_latest
-        # release -> release_v<AVCHECK_VERSION>_latest, (??) release_v<AVCHECK_VERSION>_GITSHA
-        # hotfix -> hotfix_<JIRA ID>_latest
-        # master -> master_v<AVCHECK_VERSION>_latest, (??) master_v<AVCHECK_VERSION>_GITSHA
-        # Use the same mechanism as in setting the version to share the DOCKER_TAG for all steps
-        # TODO implement the real steps here
+          text: ${{ env.BRANCH_NAME }}
+          regex: '^hotfix|feature\/([A-Z]+-[0-9]+)-[a-zA-Z_]+$'
+          flags: gm
+      - name: See matches
+        if: ${{ steps.jira.outputs.group1 != '' }}
         run: |
-          echo ${BRANCH_NAME}
+          echo "JIRA_TicketID is ${{steps.jira.outputs.group1}}"
+      - name: Set env var JIRA_TicketID
+        run: |
+          echo "JIRA_TicketID is ${{ steps.jira.outputs.group1 }}"
+          echo JIRA_TicketID=${{ steps.jira.outputs.group1 }} >> $GITHUB_ENV
+      - name: Echo JIRA_TicketID
+        run: echo "JIRA_TicketID is ${JIRA_TicketID}"
+      - name: Echo GITHUB_SHA
+        run: echo "GITHUB_SHA is $GITHUB_SHA"
+      # Assemble the Dockertag for the build image based on the type of the branch
+      # Same convention as implemented OPS-1664
+      # develop -> just develop_latest
+      - name: Echo branch-prefix
+        run: echo "branch-prefix is ${{ github.event.inputs.branch-prefix }}" 
+      - name: Assemble Dockertag for develop
+        if: ${{ github.event.inputs.branch-prefix == 'develop' }}
+        run: |
+          echo DOCKER_TAG_POSTFIX=develop_latest >> $GITHUB_ENV
+          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
+      # feature -> feature_<JIRA ID>_latest
+      - name: Assemble Dockertag for feature
+        if: ${{ github.event.inputs.branch-prefix == 'feature' }}
+        run: |
+          echo "DOCKER_TAG_POSTFIX='feature'${{env.JIRA_TicketID}}'_latest'" >> $GITHUB_ENV
+          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
+      # release -> release_v<AVCHECK_VERSION>_latest, (??) release_v<AVCHECK_VERSION>_GITSHA
+      - name: Assemble Dockertag for release
+        if: ${{ github.event.inputs.branch-prefix == 'release' }}
+        run: |
+          echo "DOCKER_TAG_POSTFIX='release'${{env.AVCHECK_VERSION}}'_latest'" >> $GITHUB_ENV
+          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
+          echo "DOCKER_TAG_SHA='release'${{env.AVCHECK_VERSION}}'_'${{env.GITHUB_SHA}}" >> $GITHUB_ENV
+          echo Dockertag SHA of antivirus_service is '${{ env.DOCKER_TAG_SHA }}'
+      # hotfix -> hotfix_<JIRA ID>_latest
+      - name: Assemble Dockertag for hotfix
+        if: ${{ github.event.inputs.branch-prefix == 'hotfix' }}
+        run: |
+          echo "DOCKER_TAG_POSTFIX='hotfix'${{env.JIRA_TicketID}}'_latest'" >> $GITHUB_ENV
+          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
+      # master -> master_v<AVCHECK_VERSION>_latest, (??) master_v<AVCHECK_VERSION>_GITSHA
+      - name: Assemble Dockertag for master
+        if: ${{ github.event.inputs.branch-prefix == 'master' }}
+        run: |
+          echo "DOCKER_TAG_POSTFIX='develop_latest'" >> $GITHUB_ENV
+          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
+          echo "DOCKER_TAG_SHA='master'${{env.AVCHECK_VERSION}}'_'${{env.GITHUB_SHA}}" >> $GITHUB_ENV
+          echo Dockertag SHA of antivirus_service is '${{ env.DOCKER_TAG_SHA }}'
+      - name: cancelling workflow if Dockertag empty String
+        if: ${{ env.DOCKER_TAG_POSTFIX == '' }}
+        uses: andymckay/cancel-action@0.2
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -82,7 +132,9 @@ jobs:
           file: ./Dockerfile.scanfile
           push: true
           tags: |
-            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.AVSCANFILE_REPO }}_v${{ env.AVCHECK_VERSION }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+          if: github.event.inputs.branch-prefix == 'master' || github.event.inputs.branch-prefix == 'release'
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
       - name: Build and push Scanurl
         uses: docker/build-push-action@v2.2.1
         with:
@@ -90,7 +142,9 @@ jobs:
           file: ./Dockerfile.scanurl
           push: true
           tags: |
-            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env.AVSCANURL_REPO }}_v${{ env.AVCHECK_VERSION }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{env. DOCKER_TAG_POSTFIX}}
+          if: github.event.inputs.branch-prefix == 'master' || github.event.inputs.branch-prefix == 'release'
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
       - name: Build and push Webserver
         uses: docker/build-push-action@v2.2.1
         with:
@@ -98,4 +152,6 @@ jobs:
           file: ./Dockerfile.webserver
           push: true
           tags: |
-            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.AVSCANWEBSERVER_REPO }}_v${{ env.AVCHECK_VERSION }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+          if: github.event.inputs.branch-prefix == 'master' || github.event.inputs.branch-prefix == 'release'
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
