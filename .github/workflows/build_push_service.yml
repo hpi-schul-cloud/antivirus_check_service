@@ -6,15 +6,16 @@ name: sc-app-build-push
 
 # Controls when the action will run.
 on:
-  workflow_dispatch:
+  push:
     branches:
       - develop
       - master
       # release branches are of e.g. release/25.3.0
       - release/[0-9]+.[0-9]+.[0-9]+
       # OPS-1664 naming convention <branch>/<JIRA-Ticket ID>-<Jira_Summary>
-      - hotfix/[A-Z]+-[0-9]+-[a-zA-Z]+_[a-zA-Z]+*
-      - feature/[A-Z]+-[0-9]+-[a-zA-Z]+_[a-zA-Z]+*
+      - hotfix/[A-Z]+-[0-9]+-[a-zA-Z0-9]+_[a-zA-Z0-9]+*
+      - feature/[A-Z]+-[0-9]+-[a-zA-Z0-9]+_[a-zA-Z0-9]+*
+  workflow_dispatch:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build_and_push"
