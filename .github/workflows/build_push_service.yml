@@ -46,10 +46,6 @@ jobs:
         run: echo Set BRANCH_NAME
         env:
           BRANCH_NAME: ${{ steps.branch.outputs.BRANCH_NAME }}
-      - name: Echo BRANCH_NAME
-        run: |
-          echo ${{ github.ref }}
-          echo BRANCH_NAME is ${BRANCH_NAME}
       - name: Read version file
         # The version to be used for tagging the images is read out of the version file
         id: read_version
@@ -60,25 +56,17 @@ jobs:
         run: |
           echo "Version of antivirus_service is ${{ steps.read_version.outputs.content }}"
           echo "AVCHECK_VERSION=${{ steps.read_version.outputs.content }}" >> $GITHUB_ENV
-      - name: Find JIRA ticket references
+      - name: RegEx JIRA ticket ID
         uses: actions-ecosystem/action-regex-match@v2
         id: jira
         with:
           text: ${{ env.BRANCH_NAME }}
           regex: '^hotfix|feature\/([A-Z]+-[0-9]+)-[a-zA-Z_]+$'
           flags: gm
-      - name: See matches
-        if: ${{ steps.jira.outputs.group1 != '' }}
-        run: |
-          echo "JIRA_TicketID is ${{steps.jira.outputs.group1}}"
       - name: Set env var JIRA_TicketID
         run: |
           echo "JIRA_TicketID is ${{ steps.jira.outputs.group1 }}"
           echo JIRA_TicketID=${{ steps.jira.outputs.group1 }} >> $GITHUB_ENV
-      - name: Echo JIRA_TicketID
-        run: echo "JIRA_TicketID is ${JIRA_TicketID}"
-      - name: Echo GITHUB_SHA
-        run: echo "GITHUB_SHA is $GITHUB_SHA"
       # Assemble the Dockertag for the build image based on the type of the branch
       - name: Find JIRA ticket BRANCH_PREFIX
         uses: actions-ecosystem/action-regex-match@v2
@@ -87,10 +75,6 @@ jobs:
           text: ${{ env.BRANCH_NAME }}
           regex: '^([a-zA-Z]+)\/[A-Z]+-[0-9]+-[a-zA-Z_]+$'
           flags: gm
-      - name: See matches
-        if: ${{ steps.branch_prefix.outputs.group1 != '' }}
-        run: |
-          echo "JIRA_TicketID is ${{steps.branch_prefix.outputs.group1}}"
       - name: Set env var JIRA BRANCH_PREFIX
         run: |
           echo "BRANCH_PREFIX is ${{ steps.branch_prefix.outputs.group1 }}"
@@ -99,38 +83,36 @@ jobs:
       # develop -> just develop_latest
       - name: Assemble Dockertag for develop
         if: env.BRANCH_PREFIX == 'develop'
-        run: |
-          echo DOCKER_TAG_POSTFIX=develop_latest >> $GITHUB_ENV
-          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
+        run: echo DOCKER_TAG_POSTFIX=develop_latest >> $GITHUB_ENV
       # feature -> feature_<JIRA ID>_latest
       - name: Assemble Dockertag for feature
         if: env.BRANCH_PREFIX == 'feature'
-        run: |
-          echo "DOCKER_TAG_POSTFIX=feature_${{env.JIRA_TicketID}}_latest" >> $GITHUB_ENV
-          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
-      # release -> release_v<AVCHECK_VERSION>_latest, (??) release_v<AVCHECK_VERSION>_GITSHA
+        run: echo "DOCKER_TAG_POSTFIX=feature_${{env.JIRA_TicketID}}_latest" >> $GITHUB_ENV
+      # release -> release_v<AVCHECK_VERSION>_latest, release_v<AVCHECK_VERSION>_GITSHA
       - name: Assemble Dockertag for release
         if: env.BRANCH_PREFIX == 'release'
         run: |
           echo "DOCKER_TAG_POSTFIX=release_${{env.AVCHECK_VERSION}}_latest" >> $GITHUB_ENV
-          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
           echo "DOCKER_TAG_SHA=release_${{env.AVCHECK_VERSION}}_${{env.GITHUB_SHA}}" >> $GITHUB_ENV
-          echo Dockertag SHA of antivirus_service is '${{ env.DOCKER_TAG_SHA }}'
       # hotfix -> hotfix_<JIRA ID>_latest
       - name: Assemble Dockertag for hotfix
         if: env.BRANCH_PREFIX == 'hotfix'
         run: |
           echo "DOCKER_TAG_POSTFIX=hotfix_${{env.JIRA_TicketID}}_latest" >> $GITHUB_ENV
-          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
-      # master -> master_v<AVCHECK_VERSION>_latest, (??) master_v<AVCHECK_VERSION>_GITSHA
+      # master -> master_v<AVCHECK_VERSION>_latest, master_v<AVCHECK_VERSION>_GITSHA
       - name: Assemble Dockertag for master
         if: env.BRANCH_PREFIX == 'master'
         run: |
           echo "DOCKER_TAG_POSTFIX=master_${{env.AVCHECK_VERSION}}_latest" >> $GITHUB_ENV
-          echo Dockertag of antivirus_service is '${{ env.DOCKER_TAG_POSTFIX }}'
           echo "DOCKER_TAG_SHA=master_${{env.AVCHECK_VERSION}}_${{env.GITHUB_SHA}}" >> $GITHUB_ENV
-          echo Dockertag SHA of antivirus_service is '${{ env.DOCKER_TAG_SHA }}'
-      - name: cancelling workflow if Dockertag empty String
+      - name: Echo Workflow Spec
+        run: |
+          echo "For BRANCH: '${BRANCH_NAME}'"
+          echo "with JIRA_Ticket: '${JIRA_TicketID}' (only Hotfix&Feature)"
+          echo "Gitflow BRANCH: '${BRANCH_PREFIX}'"
+          echo "antivirus_service is build with Dockertag: '${DOCKER_TAG_POSTFIX}'"
+          echo "GITHUB_SHA is '${GITHUB_SHA}'' (Imagetag only for Master/Release)"      
+      - name: cancel workflow if Dockertag is empty String
         if: ${{ env.DOCKER_TAG_POSTFIX == '' }}
         uses: andymckay/cancel-action@0.2
       - name: Echo DOCKER_TAG_POSTFIX
