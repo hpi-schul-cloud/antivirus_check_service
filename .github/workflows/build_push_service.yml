@@ -24,9 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Setting environment variables here make them available for all steps
-      AVSCANFILE_REPO: antivirus_check_service.scanfile
-      AVSCANURL_REPO: antivirus_check_service.scanurl
-      AVSCANWEBSERVER_REPO: antivirus_check_service.webserver
+      AVSCANFILE_REPO: schulcloud-avcheck-scanfile
+      AVSCANURL_REPO: schulcloud-avcheck-scanurl
+      AVSCANWEBSERVER_REPO: schulcloud-avcheck-scanurl
       DOCKER_NAMESPACE: schulcloud
       BRANCH_NAME: ""
       AVCHECK_VERSION: ""
