@@ -94,11 +94,15 @@ jobs:
       # develop -> just develop_latest
       - name: Assemble Dockertag for develop
         if: env.BRANCH_PREFIX == 'develop'
-        run: echo DOCKER_TAG_POSTFIX=develop_latest >> $GITHUB_ENV
+        run: |
+          echo DOCKER_TAG_POSTFIX=develop_latest >> $GITHUB_ENV
+          echo "DOCKER_TAG_SHA=develop_${{env.GITHUB_SHA}}" >> $GITHUB_ENV
       # feature -> feature_<JIRA ID>_latest
       - name: Assemble Dockertag for feature
         if: env.BRANCH_PREFIX == 'feature'
-        run: echo "DOCKER_TAG_POSTFIX=feature_${{env.JIRA_TicketID}}_latest" >> $GITHUB_ENV
+        run: |
+          echo "DOCKER_TAG_POSTFIX=feature_${{env.JIRA_TicketID}}_latest" >> $GITHUB_ENV
+          echo "DOCKER_TAG_SHA=feature_${{env.JIRA_TicketID}}_${{env.GITHUB_SHA}}" >> $GITHUB_ENV
       # release -> release_v<AVCHECK_VERSION>_latest, release_v<AVCHECK_VERSION>_GITSHA
       - name: Assemble Dockertag for release
         if: env.BRANCH_PREFIX == 'release'
@@ -110,6 +114,7 @@ jobs:
         if: env.BRANCH_PREFIX == 'hotfix'
         run: |
           echo "DOCKER_TAG_POSTFIX=hotfix_${{env.JIRA_TicketID}}_latest" >> $GITHUB_ENV
+          echo "DOCKER_TAG_SHA=hotfix_${{env.JIRA_TicketID}}_${{env.GITHUB_SHA}}" >> $GITHUB_ENV
       # master -> master_v<AVCHECK_VERSION>_latest, master_v<AVCHECK_VERSION>_GITSHA
       - name: Assemble Dockertag for master
         if: env.BRANCH_PREFIX == 'master'
