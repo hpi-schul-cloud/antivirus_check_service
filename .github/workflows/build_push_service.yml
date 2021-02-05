@@ -56,7 +56,29 @@ jobs:
         run: |
           echo "Version of antivirus_service is ${{ steps.read_version.outputs.content }}"
           echo "AVCHECK_VERSION=${{ steps.read_version.outputs.content }}" >> $GITHUB_ENV
+      # IF master & develop BRANCH_PREFIX == ${{ env.BRANCH_NAME }}
+      - name: Set env var BRANCH_PREFIX master & develop
+        if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop'      
+        run: |
+          echo "BRANCH_PREFIX is ${{ env.BRANCH_NAME }}"
+          echo BRANCH_PREFIX=${{ env.BRANCH_NAME }} >> $GITHUB_ENV
+      # IF NOT master & develop
+      # Assemble the Dockertag for the build image based on the type of the branch
+      - name: Find JIRA ticket BRANCH_PREFIX
+        if:  env.BRANCH_NAME |= 'master' && env.BRANCH_NAME |= 'develop'
+        uses: actions-ecosystem/action-regex-match@v2
+        id: branch_prefix
+        with:
+          text: ${{ env.BRANCH_NAME }}
+          regex: '^([a-zA-Z]+)\/*'
+          flags: gm
+      - name: Set env var JIRA BRANCH_PREFIX
+        if:  env.BRANCH_NAME |= 'master' && env.BRANCH_NAME |= 'develop'
+        run: |
+          echo "BRANCH_PREFIX is ${{ steps.branch_prefix.outputs.group1 }}"
+          echo BRANCH_PREFIX=${{ steps.branch_prefix.outputs.group1 }} >> $GITHUB_ENV
       - name: RegEx JIRA ticket ID
+        if: env.BRANCH_PREFIX == 'feature' || env.BRANCH_PREFIX == 'hotfix'
         uses: actions-ecosystem/action-regex-match@v2
         id: jira
         with:
@@ -64,21 +86,10 @@ jobs:
           regex: '^hotfix|feature\/([A-Z]+-[0-9]+)-[a-zA-Z_]+$'
           flags: gm
       - name: Set env var JIRA_TicketID
+        if: env.BRANCH_PREFIX == 'feature' || env.BRANCH_PREFIX == 'hotfix'     
         run: |
           echo "JIRA_TicketID is ${{ steps.jira.outputs.group1 }}"
           echo JIRA_TicketID=${{ steps.jira.outputs.group1 }} >> $GITHUB_ENV
-      # Assemble the Dockertag for the build image based on the type of the branch
-      - name: Find JIRA ticket BRANCH_PREFIX
-        uses: actions-ecosystem/action-regex-match@v2
-        id: branch_prefix
-        with:
-          text: ${{ env.BRANCH_NAME }}
-          regex: '^([a-zA-Z]+)\/[A-Z]+-[0-9]+-[a-zA-Z_]+$'
-          flags: gm
-      - name: Set env var JIRA BRANCH_PREFIX
-        run: |
-          echo "BRANCH_PREFIX is ${{ steps.branch_prefix.outputs.group1 }}"
-          echo BRANCH_PREFIX=${{ steps.branch_prefix.outputs.group1 }} >> $GITHUB_ENV
       # Same convention as implemented OPS-1664
       # develop -> just develop_latest
       - name: Assemble Dockertag for develop
