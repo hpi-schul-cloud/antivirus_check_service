@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-path = './version'
-version_file = open(path,'r')
-get_version = version_file.read()
-version_file.close()
+def set_version():
+    path = './version'
+    version_file = open(path,'r')
+    get_version = version_file.read()
+    version_file.close()
+    return get_version
 
 setup(
     name='antivirus_service',
-    version=get_version,
+    version=set_version(),
     description='This service detects virus in downloaded files by using clamd',
     author='matthias wiesner',
     packages=find_packages(exclude='tests'),
