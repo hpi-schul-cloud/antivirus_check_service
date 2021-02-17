@@ -149,42 +149,24 @@ jobs:
           context: .
           file: ./Dockerfile.scanfile
           push: true
-          tags: ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.DOCKER_TAG_SHA }}
       - name: Build and push Scanurl
         uses: docker/build-push-action@v2.2.1
         with:
           context: .
           file: ./Dockerfile.scanurl
           push: true
-          tags: ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{env. DOCKER_TAG_POSTFIX}}
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{env. DOCKER_TAG_POSTFIX}}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env.DOCKER_TAG_SHA }}
       - name: Build and push Webserver
         uses: docker/build-push-action@v2.2.1
         with:
           context: .
           file: ./Dockerfile.webserver
           push: true
-          tags: ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
-      - name: Build and push SHA Tag for Master and Release on Scanfile
-        if: ${{ github.event.inputs.branch-prefix == 'master' || github.event.inputs.branch-prefix == 'release' }}
-        uses: docker/build-push-action@v2.2.1
-        with:
-          context: .
-          file: ./Dockerfile.scanfile
-          push: true
-          tags: ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
-      - name: Build and push SHA Tag for Master and Release on Scanurl
-        if: ${{ github.event.inputs.branch-prefix == 'master' || github.event.inputs.branch-prefix == 'release' }}
-        uses: docker/build-push-action@v2.2.1
-        with:
-          context: .
-          file: ./Dockerfile.scanurl
-          push: true
-          tags: ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
-      - name: Build and push SHA Tag for Master and Release on Webserver
-        if: ${{ github.event.inputs.branch-prefix == 'master' || github.event.inputs.branch-prefix == 'release' }}
-        uses: docker/build-push-action@v2.2.1
-        with:
-          context: .
-          file: ./Dockerfile.webserver
-          push: true
-          tags: ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
