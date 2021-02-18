@@ -65,7 +65,7 @@ jobs:
       # IF NOT master & develop
       # Assemble the Dockertag for the build image based on the type of the branch
       - name: Find JIRA ticket BRANCH_PREFIX
-        if:  env.BRANCH_NAME |= 'master' && env.BRANCH_NAME |= 'develop'
+        if:  env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'develop'
         uses: actions-ecosystem/action-regex-match@v2
         id: branch_prefix
         with:
@@ -73,7 +73,7 @@ jobs:
           regex: '^([a-zA-Z]+)\/*'
           flags: gm
       - name: Set env var JIRA BRANCH_PREFIX
-        if:  env.BRANCH_NAME |= 'master' && env.BRANCH_NAME |= 'develop'
+        if:  env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'develop'
         run: |
           echo "BRANCH_PREFIX is ${{ steps.branch_prefix.outputs.group1 }}"
           echo BRANCH_PREFIX=${{ steps.branch_prefix.outputs.group1 }} >> $GITHUB_ENV
