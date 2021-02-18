@@ -26,7 +26,7 @@ jobs:
       # Setting environment variables here make them available for all steps
       AVSCANFILE_REPO: schulcloud-avcheck-scanfile
       AVSCANURL_REPO: schulcloud-avcheck-scanurl
-      AVSCANWEBSERVER_REPO: schulcloud-avcheck-scanurl
+      AVSCANWEBSERVER_REPO: schulcloud-avcheck-webserver
       DOCKER_NAMESPACE: schulcloud
       BRANCH_NAME: ""
       AVCHECK_VERSION: ""
