@@ -95,12 +95,10 @@ jobs:
         if: env.BRANCH_PREFIX == 'develop'
         run: |
           echo "BRANCH_SUFFIX=''" >> $GITHUB_ENV
-      # feature -> feature_<JIRA ID>_latest
       - name: Assemble Dockertag 
         run: |
           echo "DOCKER_TAG_POSTFIX=${{env.BRANCH_PREFIX}}${{env.BRANCH_SUFFIX}}_latest" >> $GITHUB_ENV
           echo "DOCKER_TAG_SHA=${{env.BRANCH_PREFIX}}${{env.BRANCH_SUFFIX}}_${GITHUB_SHA}" >> $GITHUB_ENV
-      # release -> release_v<AVCHECK_VERSION>_latest, release_v<AVCHECK_VERSION>_GITSHA
       - name: Echo Workflow Job Specs
         run: |
           echo "For BRANCH: '${BRANCH_NAME}'"
