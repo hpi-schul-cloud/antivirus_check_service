@@ -6,20 +6,143 @@ name: sc-app-build-push
 
 # Controls when the action will run.
 on:
+  push:
+    branches:
+      - develop
+      - master
+      # release branches are of e.g. release/25.3.0
+      - release/[0-9]+.[0-9]+.[0-9]+
+      # OPS-1664 naming convention <branch>/<JIRA-Ticket ID>-<Jira_Summary>
+      - hotfix/[A-Z]+-[0-9]+-[a-zA-Z0-9]+_[a-zA-Z0-9]+*
+      - feature/[A-Z]+-[0-9]+-[a-zA-Z0-9]+_[a-zA-Z0-9]+*
   workflow_dispatch:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "deploy"
-  build:
+  # This workflow contains a single job called "build_and_push"
+  build_and_push:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     env:
       # Setting environment variables here make them available for all steps
-      CI_GITHUB_TRAVISUSER_SWARMVM_KEY: ${{ secrets.CI_GITHUB_TRAVISUSER_SWARMVM_KEY }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      AVSCANFILE_REPO: schulcloud-avcheck-scanfile
+      AVSCANURL_REPO: schulcloud-avcheck-scanurl
+      AVSCANWEBSERVER_REPO: schulcloud-avcheck-webserver
+      DOCKER_NAMESPACE: schulcloud
+      BRANCH_NAME: ""
+      DOCKER_TAG_POSTFIX: ""
+      DOCKER_TAG_SHA: ""
+      BRANCH_PREFIX: ""
+      BRANCH_SUFFIX: ""
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it must be on first place to allow central setting of working directory
       - uses: actions/checkout@v2
+      - name: Get Branch name
+        id: branch
+        uses: nelonoel/branch-name@v1.0.1
+      - name: Set BRANCH_NAME
+        run: echo Set BRANCH_NAME
+        env:
+          BRANCH_NAME: ${{ steps.branch.outputs.BRANCH_NAME }}
+      - name: Read version file
+        # The version to be used for tagging the images is read out of the version file
+        id: read_version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./version
+      - name: Set env AVCHECK_VERSION
+        run: |
+          echo "Version of antivirus_service is ${{ steps.read_version.outputs.content }}"
+          echo "BRANCH_SUFFIX=_v${{ steps.read_version.outputs.content }}" >> $GITHUB_ENV
+      # IF master & develop BRANCH_PREFIX == ${{ env.BRANCH_NAME }}
+      - name: Set env var BRANCH_PREFIX master & develop
+        if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop'      
+        run: |
+          echo "BRANCH_PREFIX is ${{ env.BRANCH_NAME }}"
+          echo BRANCH_PREFIX=${{ env.BRANCH_NAME }} >> $GITHUB_ENV
+      # IF NOT master & develop
+      # Assemble the Dockertag for the build image based on the type of the branch
+      - name: Find JIRA ticket BRANCH_PREFIX
+        if:  env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'develop'
+        uses: actions-ecosystem/action-regex-match@v2
+        id: branch_prefix
+        with:
+          text: ${{ env.BRANCH_NAME }}
+          regex: '^([a-zA-Z]+)\/*'
+          flags: gm
+      - name: Set env var JIRA BRANCH_PREFIX
+        if:  env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'develop'
+        run: |
+          echo "BRANCH_PREFIX is ${{ steps.branch_prefix.outputs.group1 }}"
+          echo BRANCH_PREFIX=${{ steps.branch_prefix.outputs.group1 }} >> $GITHUB_ENV
+      - name: RegEx JIRA ticket ID
+        if: env.BRANCH_PREFIX == 'feature' || env.BRANCH_PREFIX == 'hotfix'
+        uses: actions-ecosystem/action-regex-match@v2
+        id: jira
+        with:
+          text: ${{ env.BRANCH_NAME }}
+          regex: '^hotfix|feature\/([A-Z]+-[0-9]+)-[a-zA-Z_]+$'
+          flags: gm
+      - name: Set env var BRANCH_SUFFIX for feature or hotfix
+        if: env.BRANCH_PREFIX == 'feature' || env.BRANCH_PREFIX == 'hotfix'     
+        run: |
+          echo "JIRA_TicketID is ${{ steps.jira.outputs.group1 }}"
+          echo "BRANCH_SUFFIX=_${{ steps.jira.outputs.group1 }}" >> $GITHUB_ENV
+      # Same convention as implemented OPS-1664
+      # develop -> just develop_latest
+      - name: Set env var BRANCH_SUFFIX for develop
+        if: env.BRANCH_PREFIX == 'develop'
+        run: |
+          echo "BRANCH_SUFFIX=''" >> $GITHUB_ENV
+      - name: Assemble Dockertag 
+        run: |
+          echo "DOCKER_TAG_POSTFIX=${{env.BRANCH_PREFIX}}${{env.BRANCH_SUFFIX}}_latest" >> $GITHUB_ENV
+          echo "DOCKER_TAG_SHA=${{env.BRANCH_PREFIX}}${{env.BRANCH_SUFFIX}}_${GITHUB_SHA}" >> $GITHUB_ENV
+      - name: Echo Workflow Job Specs
+        run: |
+          echo "For BRANCH: '${BRANCH_NAME}'"
+          echo "on Gitflow BRANCH: '${BRANCH_PREFIX}'"
+          echo "antivirus_service is build with Dockertag: '${DOCKER_TAG_POSTFIX}'"
+          echo "GITHUB_SHA is '${GITHUB_SHA}' (Imagetag only for all Branches)"      
+      - name: cancel workflow if Dockertag is empty String
+        if: ${{ env.DOCKER_TAG_POSTFIX == '' }}
+        uses: andymckay/cancel-action@0.2
+      - name: Echo DOCKER_TAG_POSTFIX
+        run: echo "DOCKER_TAG_POSTFIX is ${DOCKER_TAG_POSTFIX}"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Build and push Scanfile
+        uses: docker/build-push-action@v2.2.1
+        with:
+          context: .
+          file: ./Dockerfile.scanfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANFILE_REPO }}:${{ env.DOCKER_TAG_SHA }}
+      - name: Build and push Scanurl
+        uses: docker/build-push-action@v2.2.1
+        with:
+          context: .
+          file: ./Dockerfile.scanurl
+          push: true
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env. DOCKER_TAG_POSTFIX }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANURL_REPO }}:${{ env.DOCKER_TAG_SHA }}
+      - name: Build and push Webserver
+        uses: docker/build-push-action@v2.2.1
+        with:
+          context: .
+          file: ./Dockerfile.webserver
+          push: true
+          tags: |
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_POSTFIX }}
+            ${{ env.DOCKER_NAMESPACE }}/${{ env.AVSCANWEBSERVER_REPO }}:${{ env.DOCKER_TAG_SHA }}
