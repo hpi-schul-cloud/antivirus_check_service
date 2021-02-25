@@ -13,6 +13,21 @@ class ScanConsumer(object):
         self.amqp_url = self.amqp_config['url']
         self.amqp_queue = None
 
+        if 'heartbeat' in self.amqp_config:
+            self.heartbeat = self.amqp_config['heartbeat']
+        else:
+            self.heartbeat = 120
+
+        if 'blocked_connection_timeout' in self.amqp_config:
+            self.blocked_connection_timeout = self.amqp_config['blocked_connection_timeout']
+        else:
+            self.blocked_connection_timeout = 60
+
+        if 'socket_timeout' in self.amqp_config:
+            self.socket_timeout = self.amqp_config['socket_timeout']
+        else:
+            self.socket_timeout = 5
+
     def _callback(self, ch, method, properties, body):
         try:
             payload = self.handler.parse_body(body)
@@ -31,7 +46,9 @@ class ScanConsumer(object):
 
     def run(self):
         params = pika.URLParameters(self.amqp_url)
-        params.socket_timeout = 5
+        params.heartbeat = self.heartbeat
+        params.blocked_connection_timeout = self.blocked_connection_timeout
+        params.socket_timeout = self.socket_timeout
         self.connection = pika.BlockingConnection(params)
 
         channel = self.connection.channel()
