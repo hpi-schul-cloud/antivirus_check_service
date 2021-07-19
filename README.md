@@ -100,19 +100,9 @@ If an error occures the __Antivirus Check Service__ will try to send an error pa
 {"error": "<error message>"}
 ~~~
 
-## Install
+## CONFIGURATION
 
-Create the folder `./secrets`. 
-- Copy `./resources/config.template.yml` to `./secrets/config.yml`
-  Adjust the values in `< ... >`, these are username, passwords and other credentials.
-  Follow the step below to get the `<virustotal-api-key>`.
-
-- Copy `./resources/rabbitmq-definitions.template.json` to `./secrets/rabbitmq-definitions.json`.
-  Adjust the amqp `<user>` and the `<sha256-hash-of-users-password>`.
-  To get the `<sha256-hash-of-users-password>` you can follow the (missleading) documentation from rabbitmq:
-  https://www.rabbitmq.com/passwords.html#computing-password-hash .
-  
-  Or you can use my tool. Change to `./resources` and run `python encrypt_rabbitmq_password.py --password="<your-rabbit-password>"` (only python2). 
+  The configurate is taken via env vars.
 
 ### VirusTotal
 An API-Key is needed to use virustotal. To get this, an account on virustotal has to be created. The API-Key can be found in the account's settings.
