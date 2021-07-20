@@ -36,7 +36,7 @@ spec:
         image: {{ ANTIVIRUS_WEBSERVER_IMAGE_NAME }}:{{ APP_IMAGE_TAG }}
         imagePullPolicy: IfNotPresent
         ports:
-        - name: antivirus-webserver
+        - name: antivirus-web
           containerPort: {{ ANTIVIRUS_PORT }}
           protocol: TCP
         envFrom:
