@@ -4,7 +4,8 @@ import sys
 import yaml
 import click
 import logging
-import environs
+
+from environs import Env
 
 from antivirus_service.webserver import Webserver
 from antivirus_service.handler import ScanFileHandler, ScanUrlHandler
