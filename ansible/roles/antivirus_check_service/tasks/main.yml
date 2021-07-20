@@ -1,20 +1,14 @@
-  - name: Service
+  - name: Webserver Service
     community.kubernetes.k8s:
       kubeconfig: ~/.kube/config 
       namespace: "{{ NAMESPACE }}"
-      template: svc.yml.j2
+      template: web-svc.yml.j2
       
-  - name: Configmap
+  - name: Scanfile Service
     community.kubernetes.k8s:
       kubeconfig: ~/.kube/config 
       namespace: "{{ NAMESPACE }}"
-      template: configmap.yml.j2
-      
-  - name: Configmap File
-    community.kubernetes.k8s:
-      kubeconfig: ~/.kube/config 
-      namespace: "{{ NAMESPACE }}"
-      template: client-configmap-files.yml.j2
+      template: scanfile-svc.yml.j2
       
   - name: Secred
     community.kubernetes.k8s:
@@ -30,9 +24,15 @@
       template: onepassword.yml.j2
     when: ONEPASSWORD is defined and ONEPASSWORD|bool
       
-  - name: Deployment
+  - name: Webserver Deployment
     community.kubernetes.k8s:
       kubeconfig: ~/.kube/config 
       namespace: "{{ NAMESPACE }}"
-      template: deployment.yml.j2
+      template: web-deployment.yml.j2
+      
+  - name: Scanfile Deployment
+    community.kubernetes.k8s:
+      kubeconfig: ~/.kube/config 
+      namespace: "{{ NAMESPACE }}"
+      template: scanfile-deployment.yml.j2
       
