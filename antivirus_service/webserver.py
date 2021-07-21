@@ -50,14 +50,14 @@ class Webserver(object):
     def stop(self):
         self.app.loop.close()
         
-     async def run_loop(self, loop):
+     async def run_loop(self):
         self.connection = await aio_pika.connect_robust(self.amqp_config['url'])
         self.channel = await self.connection.channel()
 
     async def on_startup(self, app):
         print("Establish amqp connection and channel")
         self.loop = asyncio.get_event_loop()
-        connection = self.loop.run_until_complete(self.run_loop(self.loop))
+        connection = self.loop.run_until_complete(self.run_loop())
         try:
           self.loop.run_forever()
         finally:
