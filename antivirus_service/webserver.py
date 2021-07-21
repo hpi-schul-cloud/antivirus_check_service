@@ -55,10 +55,6 @@ class Webserver(object):
         self.loop = asyncio.get_event_loop()
         self.connection = await aio_pika.connect_robust(self.amqp_config['url'], loop=self.loop)
         self.channel = await self.connection.channel()
-        try:
-          self.loop.run_forever()
-        finally:
-          self.loop.run_until_complete(self.connection.close())
         self.clamd = Clamd(self.clamd_config)
 
     async def on_shutdown(self, app):
