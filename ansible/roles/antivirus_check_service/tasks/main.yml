@@ -4,12 +4,6 @@
       namespace: "{{ NAMESPACE }}"
       template: web-svc.yml.j2
       
-  - name: Scanfile Service
-    community.kubernetes.k8s:
-      kubeconfig: ~/.kube/config 
-      namespace: "{{ NAMESPACE }}"
-      template: scanfile-svc.yml.j2
-      
   - name: Secred
     community.kubernetes.k8s:
       kubeconfig: ~/.kube/config 

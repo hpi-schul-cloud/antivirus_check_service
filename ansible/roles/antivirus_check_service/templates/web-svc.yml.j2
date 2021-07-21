@@ -10,5 +10,6 @@ spec:
   ports:
   - port: {{ ANTIVIRUS_PORT }}
   selector:
-    app: antivirus-web
+    app: antivirus
+    antivirus: webserver
   clusterIP: None
