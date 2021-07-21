@@ -4,6 +4,7 @@ import time
 import base64
 import logging
 import aio_pika
+import asyncio
 from aiohttp import web
 from pprint import pformat
 from functools import wraps
@@ -48,17 +49,25 @@ class Webserver(object):
 
     def stop(self):
         self.app.loop.close()
+        
+     async def run_loop(self, loop):
+        self.connection = await aio_pika.connect_robust(self.amqp_config['url'])
+        self.channel = await self.connection.channel()
 
     async def on_startup(self, app):
         print("Establish amqp connection and channel")
-        self.connection = await aio_pika.connect_robust(self.amqp_config['url'])
-        self.channel = await self.connection.channel()
+        self.loop = asyncio.get_event_loop()
+        connection = self.loop.run_until_complete(self.run_loop(self.loop))
+        try:
+          self.loop.run_forever()
+        finally:
+          self.loop.run_until_complete(self.connection.close())
         self.clamd = Clamd(self.clamd_config)
 
     async def on_shutdown(self, app):
         print("Close amqp connection and channel")
-        await self.channel.close()
-        await self.connection.close()
+        self.loop.run_until_complete(self.channel.close())
+        self.loop.run_until_complete(self.connection.close())
 
     async def index(self, request):
         doc = {
