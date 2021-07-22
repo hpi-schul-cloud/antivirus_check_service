@@ -52,9 +52,10 @@ class Webserver(object):
 
     async def on_startup(self, app):
         print("Establish amqp connection and channel")
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop()
         self.connection = await aio_pika.connect_robust(self.amqp_config['url'], loop=self.loop)
         self.channel = await self.connection.channel()
+        self.loop.run_forever()
         self.clamd = Clamd(self.clamd_config)
 
     async def on_shutdown(self, app):
