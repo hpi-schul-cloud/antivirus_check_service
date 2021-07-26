@@ -57,7 +57,7 @@ class Webserver(object):
         print("Establish amqp connection and channel")
         self.loop = asyncio.new_event_loop()
         loop = self.loop
-        connection = oop.run_until_complete(self.main(loop))
+        connection = loop.run_until_complete(self.main(loop))
         self.connection = connection
         self.channel = await self.connection.channel()
         self.loop.run_forever()
