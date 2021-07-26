@@ -50,9 +50,6 @@ class Webserver(object):
     def stop(self):
         self.app.loop.close()
 
-    async def run_main(self, loop):
-        connection = 
-
     async def on_startup(self, app):
         print("Establish amqp connection and channel")
         self.loop_ampq = asyncio.new_event_loop()
