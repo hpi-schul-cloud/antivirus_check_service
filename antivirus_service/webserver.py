@@ -48,9 +48,8 @@ class Webserver(object):
         print("Establish amqp connection and channel")
         self.loop_ampq = asyncio.new_event_loop()
         loop = self.loop_ampq
-        connection = await aio_pika.connect_robust(self.amqp_config['url'], loop=loop)
-        self.connection = connection
-        self.channel = await self.connection.channel()
+        self.connection = aio_pika.connect_robust(self.amqp_config['url'], loop=loop)
+        self.channel = self.connection.channel()
         web.run_app(app)
         self.loop_ampq.run_forever()
 
