@@ -62,6 +62,9 @@ class Webserver(object):
     async def on_startup(self, app):
         self.clamd = Clamd(self.clamd_config)
 
+    async def on_shutdown(self, app):
+        pass
+
     async def index(self, request):
         doc = {
             "scan file request": {
