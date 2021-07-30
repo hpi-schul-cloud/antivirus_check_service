@@ -45,25 +45,23 @@ class Webserver(object):
         app.on_shutdown.append(self.on_shutdown)
 
         self.app = app
-        web.run_app(app)
-
-    def stop(self):
-        self.app.loop.close()
-
-    async def on_startup(self, app):
         print("Establish amqp connection and channel")
         self.loop_ampq = asyncio.new_event_loop()
         loop = self.loop_ampq
         connection = await aio_pika.connect_robust(self.amqp_config['url'], loop=loop)
         self.connection = connection
         self.channel = await self.connection.channel()
+        web.run_app(app)
         self.loop_ampq.run_forever()
-        self.clamd = Clamd(self.clamd_config)
 
-    async def on_shutdown(self, app):
+    def stop(self):
+        self.app.loop.close()
         print("Close amqp connection and channel")
         self.loop_ampq.run_until_complete(self.channel.close())
         self.loop_ampq.run_until_complete(self.connection.close())
+
+    async def on_startup(self, app):
+        self.clamd = Clamd(self.clamd_config)
 
     async def index(self, request):
         doc = {
