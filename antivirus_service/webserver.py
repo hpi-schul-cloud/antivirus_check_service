@@ -45,16 +45,22 @@ class Webserver(object):
         app.on_shutdown.append(self.on_shutdown)
 
         self.app = app
-        print("Establish amqp connection and channel")
-        self.loop_ampq = asyncio.new_event_loop()
-        loop = self.loop_ampq
-        self.connection = aio_pika.connect_robust(self.amqp_config['url'], loop=loop)
-        self.channel = self.connection.channel()
         web.run_app(app)
-        self.loop_ampq.run_forever()
+        self.pika_startup()
 
     def stop(self):
         self.app.loop.close()
+        self.pika_shutdown()
+        
+    async def pika_startup(self):
+        print("Establish amqp connection and channel")
+        self.loop_ampq = asyncio.new_event_loop()
+        loop = self.loop_ampq
+        self.connection = await aio_pika.connect_robust(self.amqp_config['url'], loop=loop)
+        self.channel = await self.connection.channel()
+        self.loop_ampq.run_forever()
+        
+    async def pika_shutdown(self):
         print("Close amqp connection and channel")
         self.loop_ampq.run_until_complete(self.channel.close())
         self.loop_ampq.run_until_complete(self.connection.close())
