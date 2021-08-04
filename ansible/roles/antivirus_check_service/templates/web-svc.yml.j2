@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: antivirus-webserver-svc
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: antivirus
+    antivirus: webserver
+spec:
+  ports:
+  - port: {{ ANTIVIRUS_PORT }}
+  selector:
+    app: antivirus
+    antivirus: webserver
+  clusterIP: None

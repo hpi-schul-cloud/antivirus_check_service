@@ -1,0 +1,5 @@
+---
+ANTIVIRUS_WEBSERVER_IMAGE_NAME: ghcr.io/hpi-schul-cloud/antivirus_check_service-webserver
+ANTIVIRUS_SCANFILE_IMAGE_NAME: ghcr.io/hpi-schul-cloud/antivirus_check_service-scanfile
+ANTIVIRUS_PORT: 8080
+
