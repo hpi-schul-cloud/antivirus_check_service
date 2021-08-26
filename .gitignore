@@ -12,3 +12,5 @@ nbproject
 *.log
 tests
 secrets
+*.swp
+venv
