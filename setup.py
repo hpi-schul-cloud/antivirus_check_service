@@ -2,22 +2,16 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-def set_version():
-    path = './version'
-    version_file = open(path,'r')
-    get_version = version_file.read()
-    version_file.close()
-    return get_version
+with open("requirements.txt", "r") as fh:
+    requirements = fh.readlines()
 
 setup(
     name='antivirus_service',
-    version=set_version(),
+    version='2.0.0',
     description='This service detects virus in downloaded files by using clamd',
-    author='matthias wiesner',
+    author='hpi schul-cloud',
     packages=find_packages(exclude='tests'),
-    install_requires=[
-        'aio_pika'
-    ],
+    install_requires=[req for req in requirements if req[:2] != "# "],
     entry_points={
         'console_scripts': [
             'antivirus=antivirus_service.service:main'

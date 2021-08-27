@@ -33,8 +33,9 @@ spec:
         runAsNonRoot: true
       containers:
       - name: antivirus-webserver
-        image: {{ ANTIVIRUS_WEBSERVER_IMAGE_NAME }}:{{ APP_IMAGE_TAG }}
+        image: {{ ANTIVIRUS_IMAGE_NAME }}:{{ APP_IMAGE_TAG }}
         imagePullPolicy: IfNotPresent
+        args: ["webserver"]
         ports:
         - name: antivirus-web
           containerPort: {{ ANTIVIRUS_PORT }}
