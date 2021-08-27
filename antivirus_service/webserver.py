@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
-import time
 import base64
 import logging
-import aio_pika
-import asyncio
+
+import pika
 from aiohttp import web
-from pprint import pformat
 from functools import wraps
 
 from antivirus_service.clamd import Clamd
@@ -31,45 +29,23 @@ class Webserver(object):
         self.amqp_config = settings.config[settings.env]['amqp']
         self.clamd_config = settings.config[settings.env]['clamd']
         self.auth_keys = [
-            base64.b64encode(bytes(entry, 'utf-8')).decode('ascii') 
-                for entry in settings.config[settings.env]['webserver']['auth_users']]
+            base64.b64encode(bytes(entry, 'utf-8')).decode('ascii')
+            for entry in settings.config[settings.env]['webserver']['auth_users']]
 
-    def run(self):
+        self.clamd = Clamd(self.clamd_config)
+
         app = web.Application()
         app.router.add_get('/', self.index)
         app.router.add_post('/scan/file', self.handle_file)
         app.router.add_post('/scan/url', self.handle_uri)
         app.router.add_get('/antivirus-version', self.handle_version)
-
-        app.on_startup.append(self.on_startup)
-        app.on_shutdown.append(self.on_shutdown)
-
         self.app = app
-        web.run_app(app)
-        self.pika_startup()
+
+    def run(self):
+        web.run_app(self.app)
 
     def stop(self):
         self.app.loop.close()
-        self.pika_shutdown()
-        
-    async def pika_startup(self):
-        print("Establish amqp connection and channel")
-        self.loop_ampq = asyncio.new_event_loop()
-        loop = self.loop_ampq
-        self.connection = await aio_pika.connect_robust(self.amqp_config['url'], loop=loop)
-        self.channel = await self.connection.channel()
-        self.loop_ampq.run_forever()
-        
-    async def pika_shutdown(self):
-        print("Close amqp connection and channel")
-        self.loop_ampq.run_until_complete(self.channel.close())
-        self.loop_ampq.run_until_complete(self.connection.close())
-
-    async def on_startup(self, app):
-        self.clamd = Clamd(self.clamd_config)
-
-    async def on_shutdown(self, app):
-        pass
 
     async def index(self, request):
         doc = {
@@ -120,12 +96,13 @@ class Webserver(object):
             assert 'download_uri' in payload
             assert 'callback_uri' in payload
 
-            await self.enqueue_scan_file_request(body)
+            self.enqueue_scan_file_request(body)
             return web.Response(status=202)
 
         except AssertionError:
             return web.Response(status=422, text='Unprocessable Entity: missing parameter')
         except Exception as e:
+            logging.error('error', exc_info=True)
             return web.Response(status=500, text=str(e))
 
     @auth_required
@@ -136,23 +113,27 @@ class Webserver(object):
             assert 'url' in payload
             assert 'callback_uri' in payload
 
-            await self.enqueue_scan_url_request(body)
-            return web.Response(status=202, text='The request has been accepted for processing, but the processing has not been completed.')
+            self.enqueue_scan_url_request(body)
+            return web.Response(status=202,
+                                text='The request has been accepted for processing, but the processing has not been completed.')
 
         except AssertionError:
             return web.Response(status=422, text='Unprocessable Entity: missing parameter')
         except Exception as e:
+            logging.error('error', exc_info=True)
             return web.Response(status=500, text=str(e))
 
-    async def enqueue_scan_file_request(self, body):
-        await self.channel.default_exchange.publish(
-            aio_pika.Message(body=body), routing_key=self.amqp_config['scan_file']['routing_key']
-        )
+    def enqueue_scan_file_request(self, body):
+        self.send(body, self.amqp_config['scan_file']['routing_key'])
 
-    async def enqueue_scan_url_request(self, body):
-        await self.channel.default_exchange.publish(
-            aio_pika.Message(body=body), routing_key=self.amqp_config['scan_url']['routing_key']
-        )
+    def enqueue_scan_url_request(self, body):
+        self.send(body, routing_key=self.amqp_config['scan_url']['routing_key'])
+
+    def send(self, body, routing_key):
+        params = pika.URLParameters(self.amqp_config['url'])
+        with pika.BlockingConnection(params) as con:
+            with con.channel() as channel:
+                channel.basic_publish(body=body, exchange='', routing_key=routing_key)
 
     @auth_required
     async def handle_version(self, request):

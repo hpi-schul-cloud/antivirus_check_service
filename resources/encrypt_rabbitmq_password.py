@@ -36,6 +36,7 @@ def generate_random_salt():
     # only 4 Bytes = 32 Bit
     return ''.join(random.choice(chars) for i in range(4)).encode('hex')
 
+
 def encode_rabbit_password_hash(salt, password):
     salt_and_password = salt + password.encode('utf-8').encode('hex')
     salt_and_password = bytearray.fromhex(salt_and_password)
@@ -44,10 +45,12 @@ def encode_rabbit_password_hash(salt, password):
     password_hash = bytearray.fromhex(salt + salted_sha256)
     return binascii.b2a_base64(password_hash).strip()
 
+
 def decode_rabbit_password_hash(password_hash):
     password_hash = binascii.a2b_base64(password_hash)
     decoded_hash = password_hash.encode('hex')
-    return (decoded_hash[0:8], decoded_hash[8:])
+    return decoded_hash[0:8], decoded_hash[8:]
+
 
 def check_rabbit_password(test_password, password_hash):
     salt, _ = decode_rabbit_password_hash(password_hash)
@@ -62,7 +65,7 @@ args = parser.parse_args()
 salt = generate_random_salt()
 sha256hash = encode_rabbit_password_hash(salt, args.password)
 
-print '== Your generated sha256 hash =='
-print '%s (with salt: %s)' % (sha256hash, salt)
-print
-print '== Check: ', check_rabbit_password(args.password, sha256hash)
+print('== Your generated sha256 hash ==')
+print('%s (with salt: %s)' % (sha256hash, salt))
+print()
+print('== Check: ', check_rabbit_password(args.password, sha256hash))

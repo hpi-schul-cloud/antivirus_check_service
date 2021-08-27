@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
-import yaml
 import click
 import logging
 
@@ -17,7 +15,7 @@ class AntivirusSettings(object):
         self.env = env
         self.project_root = os.path.dirname(os.path.abspath(__file__))
         self.config = {}
-        
+
         env = Env()
         with env.prefixed(self.env.upper()+"_"):
             self.config[self.env]={}
@@ -49,7 +47,7 @@ class AntivirusSettings(object):
                     self.config[self.env][param]['scan_url']['queue']=env("QUEUE","scan_url")
                     self.config[self.env][param]['scan_url']['routing_key']=env("ROUTING_KEY","scan_url")
 
-        loglevel = logging.INFO if debug  else logging.ERROR
+        loglevel = logging.INFO if debug else logging.ERROR
         logging.basicConfig(level=loglevel)
 
 
@@ -96,5 +94,10 @@ def webserver(ctx):
     except KeyboardInterrupt:
         webserver.stop()
 
+
 def main():
     cli(obj={})
+
+
+if __name__ == "__main__":
+    main()
