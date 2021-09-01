@@ -17,35 +17,35 @@ class AntivirusSettings(object):
         self.config = {}
 
         env = Env()
-        with env.prefixed(self.env.upper()+"_"):
-            self.config[self.env]={}
-            param="clamd"
-            with env.prefixed(param.upper()+"_"):
-                self.config[self.env][param]={}
-                self.config[self.env][param]['type']=env("TYPE","network")
-                self.config[self.env][param]['host']=env("HOST","clamav")
-                self.config[self.env][param]['port']=env.int("PORT",3310)
-                self.config[self.env][param]['directory']=env("DIRECTORY","/shared")
-            param="webserver"
-            with env.prefixed(param.upper()+"_"):
-                self.config[self.env][param]={}
-                self.config[self.env][param]['auth_users']=env.list("AUTH_USERS")
-            param="virustotal"
-            with env.prefixed(param.upper()+"_"):
-                self.config[self.env][param]={}
-                self.config[self.env][param]['api_key']=env.list("API_KEY")
-            param="amqp"
-            with env.prefixed(param.upper()+"_"):
-                self.config[self.env][param]={}
-                self.config[self.env][param]['url']=env("URL","amqp://rabbitmq/antivirus")
+        with env.prefixed(self.env.upper() + "_"):
+            self.config[self.env] = {}
+            param = "clamd"
+            with env.prefixed(param.upper() + "_"):
+                self.config[self.env][param] = {}
+                self.config[self.env][param]['type'] = env("TYPE", "network")
+                self.config[self.env][param]['host'] = env("HOST", "clamav")
+                self.config[self.env][param]['port'] = env.int("PORT", 3310)
+                self.config[self.env][param]['directory'] = env("DIRECTORY", "/shared")
+            param = "webserver"
+            with env.prefixed(param.upper() + "_"):
+                self.config[self.env][param] = {}
+                self.config[self.env][param]['auth_users'] = env.list("AUTH_USERS")
+            param = "virustotal"
+            with env.prefixed(param.upper() + "_"):
+                self.config[self.env][param] = {}
+                self.config[self.env][param]['api_key'] = env.list("API_KEY")
+            param = "amqp"
+            with env.prefixed(param.upper() + "_"):
+                self.config[self.env][param] = {}
+                self.config[self.env][param]['url'] = env("URL", "amqp://rabbitmq/antivirus")
                 with env.prefixed("SCAN_FILE_"):
-                    self.config[self.env][param]['scan_file']={}
-                    self.config[self.env][param]['scan_file']['queue']=env("QUEUE","scan_file")
-                    self.config[self.env][param]['scan_file']['routing_key']=env("ROUTING_KEY","scan_file")
+                    self.config[self.env][param]['scan_file'] = {}
+                    self.config[self.env][param]['scan_file']['queue'] = env("QUEUE", "scan_file")
+                    self.config[self.env][param]['scan_file']['routing_key'] = env("ROUTING_KEY", "scan_file")
                 with env.prefixed("SCAN_URL_"):
-                    self.config[self.env][param]['scan_url']={}
-                    self.config[self.env][param]['scan_url']['queue']=env("QUEUE","scan_url")
-                    self.config[self.env][param]['scan_url']['routing_key']=env("ROUTING_KEY","scan_url")
+                    self.config[self.env][param]['scan_url'] = {}
+                    self.config[self.env][param]['scan_url']['queue'] = env("QUEUE", "scan_url")
+                    self.config[self.env][param]['scan_url']['routing_key'] = env("ROUTING_KEY", "scan_url")
 
         loglevel = logging.INFO if debug else logging.ERROR
         logging.basicConfig(level=loglevel)
