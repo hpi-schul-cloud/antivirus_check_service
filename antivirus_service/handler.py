@@ -43,14 +43,16 @@ class ScanFileHandler(ScanHandler):
         if access_token:
             headers['Authorization'] = 'Bearer %s' % access_token
 
+        sleep_time = 2
         # we try to download the file multiple times, just for the case,
         # that the scan request was triggered before the file upload 
         # has been finished
         last_exception_message = ''
-        count = 5
+        count = 3
         for i in range(1, count):
             try:
-                r = requests.get(download_uri, stream=True, headers=headers)
+                # defining stream and timeout = just specifying the initial socket connect timeout, that's what we want
+                r = requests.get(download_uri, stream=True, headers=headers, timeout=10)
                 if r.status_code != 200:
                     raise Exception('Bad status code: {0}'.format(r.status_code))
                 else:
@@ -59,10 +61,10 @@ class ScanFileHandler(ScanHandler):
                 last_exception_message = str(e)
                 logging.info('file could not downloaded: for {0} time'.format(i))
                 if i < count:
-                    time.sleep(2**i)
+                    time.sleep(sleep_time)
         else:
-            raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message, 2**(i+1) - 1))
-
+            raise Exception('File could not downloaded: {0} - after {1} seconds'.format(last_exception_message,
+                                                                                        sleep_time * i))
         return self.clamd.scan_file(r)
 
     def callback(self, callback_uri, access_token, scan_result, signature):
@@ -128,7 +130,7 @@ class ScanUrlHandler(ScanHandler):
         logging.info('Start scan')
 
         api_key = self.config['virustotal']['api_key']
-        
+
         params = {'apikey': api_key, 'url': url}
         response = requests.post('https://www.virustotal.com/vtapi/v2/url/scan', data=params)
         scan_response = response.json()
