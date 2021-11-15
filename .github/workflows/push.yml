@@ -4,9 +4,7 @@ name: Build and push Docker Image
 on:
   push:
     branches-ignore:
-      - main
-      - master
-      - dependabot/*
+      - dependabot/**
 
 jobs:
   build_and_push:
@@ -29,7 +27,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: test image exists
+        run: |
+         mkdir -p ~/.docker
+         echo '{"experimental": "enabled"}' >> ~/.docker/config.json
+         echo "IMAGE_EXISTS=$(docker manifest inspect ghcr.io/${{ github.repository }}:${{ github.sha }} > /dev/null && echo 1 || echo 0)" >> $GITHUB_ENV
+
       - name: Build and push ${{ github.repository }}
+        if: ${{ env.IMAGE_EXISTS == 0 }}
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -38,22 +43,33 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
           labels: ${{ steps.docker_meta_img.outputs.labels }}
-          
-  dispatch:
+
+  branch_name:
     runs-on: ubuntu-latest
-    needs: 
-      - build_and_push
+    outputs:
+      branch: ${{ steps.extract_branch.outputs.branch }}
     steps:
-      - uses: actions/checkout@v2
       - name: Extract branch name
         shell: bash
-        run: |
-          git_ref_name="$(echo ${GITHUB_REF#refs/heads/})"
-          echo "git_ref_name=$git_ref_name" >> $GITHUB_ENV
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: hpi-schul-cloud/dof_app_deploy
-          event-type: dev-deploy
-          client-payload: '{"branch": "${{ env.git_ref_name }}" }'
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+  deploy:
+    needs:
+      - build_and_push
+      - branch_name
+    uses: hpi-schul-cloud/dof_app_deploy/.github/workflows/deploy.yml@main
+    with:
+      branch: ${{ needs.branch_name.outputs.branch }}
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      DEV_VAULT: ${{ secrets.DEV_VAULT }}
+      DEV_KUBE_CONFIG: ${{ secrets.DEV_KUBE_CONFIG }}
+      ETHERPAD_API_KEY: ${{ secrets.ETHERPAD_API_KEY }}
+
+  deploy-successful:
+    needs:
+      - deploy
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "deploy was successful"
