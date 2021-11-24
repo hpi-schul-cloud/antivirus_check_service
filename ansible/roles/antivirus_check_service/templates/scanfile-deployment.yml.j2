@@ -33,7 +33,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: antivirus-scanfile
-        image: {{ ANTIVIRUS_IMAGE_NAME }}:{{ APP_IMAGE_TAG }}
+        image: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE }}:{{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
         imagePullPolicy: IfNotPresent
         args: ["scan-file"]
         envFrom:
