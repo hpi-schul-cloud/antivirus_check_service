@@ -1,4 +1,4 @@
 ---
-ANTIVIRUS_CHECK_SERVICE_IMAGE_NAME: ghcr.io/hpi-schul-cloud/antivirus_check_service
+ANTIVIRUS_CHECK_SERVICE_IMAGE: ghcr.io/hpi-schul-cloud/antivirus_check_service
 ANTIVIRUS_PORT: 8080
 
