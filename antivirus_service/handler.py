@@ -69,7 +69,7 @@ class ScanFileHandler(ScanHandler):
 
     def callback(self, callback_uri, access_token, scan_result, signature):
         logging.info('Start callback')
-        headers = {}
+        headers = {'Content-type': 'application/json'}
         if access_token:
             headers['Authorization'] = 'Bearer %s' % access_token
 

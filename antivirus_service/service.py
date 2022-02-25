@@ -38,6 +38,7 @@ class AntivirusSettings(object):
             with env.prefixed(param.upper() + "_"):
                 self.config[self.env][param] = {}
                 self.config[self.env][param]['url'] = env("URL", "amqp://rabbitmq/antivirus")
+                self.config[self.env][param]['exchange'] = env("EXCHANGE", "antivirus")
                 with env.prefixed("SCAN_FILE_"):
                     self.config[self.env][param]['scan_file'] = {}
                     self.config[self.env][param]['scan_file']['queue'] = env("QUEUE", "scan_file")
