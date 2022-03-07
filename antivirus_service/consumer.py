@@ -11,6 +11,7 @@ class ScanConsumer(object):
         self.handler = handler        
         self.amqp_config = settings.config[settings.env]['amqp']
         self.amqp_url = self.amqp_config['url']
+        self.exchange = self.amqp_config['exchange']
         self.amqp_queue = None
 
     def _callback(self, ch, method, properties, body):
@@ -36,7 +37,8 @@ class ScanConsumer(object):
 
         channel = self.connection.channel()
         channel.queue_declare(self.amqp_queue)
-        channel.basic_consume(self.amqp_queue,self._callback)
+        channel.queue_bind(self.amqp_queue, self.exchange)
+        channel.basic_consume(self.amqp_queue, self._callback)
         channel.start_consuming()
 
     def stop(self):

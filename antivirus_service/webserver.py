@@ -133,7 +133,7 @@ class Webserver(object):
         params = pika.URLParameters(self.amqp_config['url'])
         with pika.BlockingConnection(params) as con:
             with con.channel() as channel:
-                channel.basic_publish(body=body, exchange='', routing_key=routing_key)
+                channel.basic_publish(body=body, exchange=self.amqp_config['exchange'], routing_key=routing_key)
 
     @auth_required
     async def handle_version(self, request):
