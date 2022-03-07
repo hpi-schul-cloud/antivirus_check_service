@@ -1,3 +1,4 @@
 ---
 ANTIVIRUS_PORT: 8080
+ANTIVIRUS_CHECK_SERVICE_IMAGE: schulcloud/schulcloud-avcheck
 
