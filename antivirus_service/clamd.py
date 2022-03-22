@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import os
 import pyclamd
 import logging
-import tempfile
 from datetime import datetime
 
 from antivirus_service.pyclamd_overrride import scan_stream_overload
@@ -26,19 +24,18 @@ class Clamd(object):
 
     def scan_file(self, response):
         logging.info('Start scan')
-        result = "ERROR"
         try:
             cd = self.get_connection()
         except pyclamd.ConnectionError:
-            logging.error('clamd: Can\'t connect to Clamd\'s network socket.')
+            logging.exception('clamd: Can\'t connect to Clamd\'s network socket.')
             return
         try:
             result = cd.scan_stream(response)
         except pyclamd.BufferTooLongError:
-            logging.error('	clamd: BufferTooLongError.')
+            logging.exception('	clamd: BufferTooLongError.')
             return
         except pyclamd.ConnectionError:
-            logging.error('clamd: Can\'t connect to Clamd\'s network socket.')
+            logging.exception('clamd: Can\'t connect to Clamd\'s network socket.')
             return
 
         logging.info(result)
@@ -52,8 +49,6 @@ class Clamd(object):
             raise Exception('An error occured with the viruschecker: {}'.format(result['stream'][1]))
         else:
             return True, result['stream'][1]
-
-
 
     def get_version(self):
         cd = self.get_connection()
