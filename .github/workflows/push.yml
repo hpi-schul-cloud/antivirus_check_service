@@ -10,18 +10,18 @@ jobs:
   build_and_push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Docker meta Service Name
         id: docker_meta_img
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=branch,enable=false,priority=600
             type=sha,enable=true,priority=600,prefix=
       - name: Log into registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build and push ${{ github.repository }}
         if: ${{ env.IMAGE_EXISTS == 0 }}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -73,3 +73,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "deploy was successful"
+
+  trivy-vulnerability-scanning:
+    needs:
+      - build_and_push
+      - branch_name
+    runs-on: ubuntu-latest
+    steps:
+      - name: run trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@d63413b0a4a4482237085319f7f4a1ce99a8f2ac
+        with:
+          image-ref: 'ghcr.io/${{ github.repository }}:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: 1
+          ignore-unfixed: true
+      - name: upload trivy results
+        if: ${{ always() }}
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
