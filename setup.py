@@ -7,7 +7,7 @@ with open("requirements.txt", "r") as fh:
 
 setup(
     name='antivirus_service',
-    version='2.1.0',
+    version='2.1.1',
     description='This service detects virus in downloaded files by using clamd',
     author='hpi schul-cloud',
     packages=find_packages(exclude='tests'),
