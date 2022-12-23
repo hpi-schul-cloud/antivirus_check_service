@@ -6,9 +6,14 @@ on:
     branches-ignore:
       - dependabot/**
 
+permissions:
+  contents: read
+
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
 
