@@ -25,7 +25,7 @@ class ScanHandler(object):
             logging.error('On sending error message: empty callback_uri')
             return
 
-        headers = {'status': '500 Internal Server Error'}
+        headers = {'Content-type': 'application/json'}
 
         if access_token:
             headers['Authorization'] = 'Bearer %s' % access_token
