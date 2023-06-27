@@ -1,4 +1,4 @@
 ---
 ANTIVIRUS_PORT: 8080
-ANTIVIRUS_CHECK_SERVICE_IMAGE: schulcloud/schulcloud-avcheck
+ANTIVIRUS_CHECK_SERVICE_IMAGE: quay.io/schulcloudverbund/schulcloud-avcheck
 
