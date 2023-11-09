@@ -6,6 +6,10 @@ metadata:
   labels:
     app: antivirus
     antivirus: scanfile
+    app.kubernetes.io/part-of: schulcloud-verbund
+    app.kubernetes.io/version: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
+    git.branch: {{ ANTIVIRUS_CHECK_SERVICE_BRANCH_NAME }}
+    git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
 spec:
   replicas: {{ ANTIVIRUS_SCANFILE_REPLICAS|default("1", true) }}
   strategy:
@@ -24,9 +28,13 @@ spec:
       labels:
         app: antivirus
         antivirus: scanfile
+        app.kubernetes.io/part-of: schulcloud-verbund
+        app.kubernetes.io/version: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
+        git.branch: {{ ANTIVIRUS_CHECK_SERVICE_BRANCH_NAME }}
+        git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
       annotations:
     spec:
-      securityContext:  
+      securityContext:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
@@ -53,4 +61,3 @@ spec:
       volumes:
       - name: shared
         emptyDir: {}
-
