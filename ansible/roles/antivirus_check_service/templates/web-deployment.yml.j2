@@ -8,6 +8,9 @@ metadata:
     antivirus: webserver
     app.kubernetes.io/part-of: schulcloud-verbund
     app.kubernetes.io/version: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
+    app.kubernetes.io/name: antivirus
+    app.kubernetes.io/component: web
+    app.kubernetes.io/managed-by: ansible
     git.branch: {{ ANTIVIRUS_CHECK_SERVICE_BRANCH_NAME }}
     git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
 spec:
@@ -30,6 +33,9 @@ spec:
         antivirus: webserver
         app.kubernetes.io/part-of: schulcloud-verbund
         app.kubernetes.io/version: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
+        app.kubernetes.io/name: antivirus
+        app.kubernetes.io/component: web
+        app.kubernetes.io/managed-by: ansible
         git.branch: {{ ANTIVIRUS_CHECK_SERVICE_BRANCH_NAME }}
         git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
     spec:
