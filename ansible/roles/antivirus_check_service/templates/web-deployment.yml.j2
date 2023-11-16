@@ -6,6 +6,13 @@ metadata:
   labels:
     app: antivirus
     antivirus: webserver
+    app.kubernetes.io/part-of: schulcloud-verbund
+    app.kubernetes.io/version: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
+    app.kubernetes.io/name: webserver
+    app.kubernetes.io/component: antivirus
+    app.kubernetes.io/managed-by: ansible
+    git.branch: {{ ANTIVIRUS_CHECK_SERVICE_BRANCH_NAME }}
+    git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
 spec:
   replicas: {{ ANTIVIRUS_WEBSERVER_REPLICAS|default("1", true) }}
   strategy:
@@ -24,9 +31,15 @@ spec:
       labels:
         app: antivirus
         antivirus: webserver
-      annotations:
+        app.kubernetes.io/part-of: schulcloud-verbund
+        app.kubernetes.io/version: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
+        app.kubernetes.io/name: webserver
+        app.kubernetes.io/component: antivirus
+        app.kubernetes.io/managed-by: ansible
+        git.branch: {{ ANTIVIRUS_CHECK_SERVICE_BRANCH_NAME }}
+        git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
     spec:
-      securityContext:  
+      securityContext:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
