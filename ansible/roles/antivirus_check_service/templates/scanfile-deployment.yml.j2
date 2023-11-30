@@ -66,3 +66,36 @@ spec:
       volumes:
       - name: shared
         emptyDir: {}
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/part-of
+                  operator: In
+                  values:
+                  - schulcloud-verbund
+              topologyKey: "kubernetes.io/hostname"
+              namespaceSelector: {}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 10
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - scanfile
+              topologyKey: "cloud.ionos.com/nodepool-name"
+          - weight: 10
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - scanfile
+              topologyKey: "topology.kubernetes.io/zone"
