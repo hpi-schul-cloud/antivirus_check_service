@@ -63,6 +63,7 @@ spec:
           requests:
             cpu: {{ ANTIVIRUS_WEBSERVER_CPU_REQUESTS|default("100m", true) }}
             memory: {{ ANTIVIRUS_WEBSERVER_MEMORY_REQUESTS|default("128Mi", true) }}
+{% if AFFINITY_ENABLE is defined and AFFINITY_ENABLE|bool %}
       affinity:
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -98,3 +99,4 @@ spec:
                   values:
                   - webserver
               topologyKey: "topology.kubernetes.io/zone"
+{% endif %}

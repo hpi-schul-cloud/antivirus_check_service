@@ -66,6 +66,7 @@ spec:
       volumes:
       - name: shared
         emptyDir: {}
+{% if AFFINITY_ENABLE is defined and AFFINITY_ENABLE|bool %}
       affinity:
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -101,3 +102,4 @@ spec:
                   values:
                   - scanfile
               topologyKey: "topology.kubernetes.io/zone"
+{% endif %}
