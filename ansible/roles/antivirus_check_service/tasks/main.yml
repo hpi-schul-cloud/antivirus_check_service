@@ -31,3 +31,4 @@
       template: scanfile-scaled-object.yml.j2
     when:
       - KEDA_ENABLED is defined and KEDA_ENABLED|bool
+      - SCALED_ANTIVIRUS_SCANFILE_WORKER_ENABLED is defined and SCALED_ANTIVIRUS_SCANFILE_WORKER_ENABLED|bool
