@@ -16,7 +16,7 @@ metadata:
     git.repo: {{ ANTIVIRUS_CHECK_SERVICE_REPO_NAME }}
 spec:
   scaleTargetRef:
-    name: api-worker-deployment
+    name: antivirus-scanfile-deployment
   cooldownPeriod: 1800 #keep action for 15min
   idleReplicaCount: 0
   minReplicaCount:  {{ ANTIVIRUS_SCANFILE_MIN_REPLICA_COUNT|default("0", true) }}
