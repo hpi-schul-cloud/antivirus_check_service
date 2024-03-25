@@ -20,7 +20,7 @@ spec:
   cooldownPeriod: 1800 #keep action for 15min
   idleReplicaCount: 0
   minReplicaCount:  {{ ANTIVIRUS_SCANFILE_MIN_REPLICA_COUNT|default("0", true) }}
-  maxReplicaCount:  {{ ANTIVIRUS_SCANFILE_MAX_REPLICA_COUNT|default("1", true) }}
+  maxReplicaCount:  {{ ANTIVIRUS_SCANFILE_MAX_REPLICA_COUNT|default("2", true) }}
   triggers:
   - type: rabbitmq
     metadata:
