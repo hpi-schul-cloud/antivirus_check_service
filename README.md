@@ -62,7 +62,7 @@ Authenticate and publish a message to the regarding queue using the routing_key:
 - url: `amqp://<user>:<password>@<antivirus-check-service>/antivirus`
 
 #### scan file:
- - routing key: `scan_file`
+ - routing key: `scan_file_v2`
  - message:
     ~~~json
     {

@@ -17,7 +17,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: antivirus-scanfile-deployment
-  cooldownPeriod: 1800 #keep action for 15min
+  cooldownPeriod: 1800 #keep in action for 15min
   idleReplicaCount: 0
   minReplicaCount:  {{ ANTIVIRUS_SCANFILE_MIN_REPLICA_COUNT|default("0", true) }}
   maxReplicaCount:  {{ ANTIVIRUS_SCANFILE_MAX_REPLICA_COUNT|default("2", true) }}
@@ -25,7 +25,7 @@ spec:
   - type: rabbitmq
     metadata:
       protocol: amqp
-      queueName: scan_file
+      queueName: scan_file_v2
       mode: QueueLength
       value: "1"
     authenticationRef:
