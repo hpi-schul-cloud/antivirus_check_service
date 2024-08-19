@@ -3,6 +3,8 @@
       kubeconfig: ~/.kube/config 
       namespace: "{{ NAMESPACE }}"
       template: web-svc.yml.j2
+    tags:
+      - service
       
   - name: Secret by 1Password
     kubernetes.core.k8s:
@@ -10,18 +12,24 @@
       namespace: "{{ NAMESPACE }}"
       template: onepassword.yml.j2
     when: ONEPASSWORD_OPERATOR is defined and ONEPASSWORD_OPERATOR|bool
+    tags:
+      - 1password
       
   - name: Webserver Deployment
     kubernetes.core.k8s:
       kubeconfig: ~/.kube/config 
       namespace: "{{ NAMESPACE }}"
       template: web-deployment.yml.j2
+    tags:
+      - deployment
       
   - name: Scanfile Deployment
     kubernetes.core.k8s:
       kubeconfig: ~/.kube/config 
       namespace: "{{ NAMESPACE }}"
       template: scanfile-deployment.yml.j2
+    tags:
+      - deployment
 
 
   - name: scanfile scaled object
@@ -32,3 +40,5 @@
     when:
       - KEDA_ENABLED is defined and KEDA_ENABLED|bool
       - SCALED_ANTIVIRUS_SCANFILE_WORKER_ENABLED is defined and SCALED_ANTIVIRUS_SCANFILE_WORKER_ENABLED|bool
+    tags:
+      - keda
