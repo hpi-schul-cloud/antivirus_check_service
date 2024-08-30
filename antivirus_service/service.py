@@ -6,8 +6,8 @@ import logging
 from environs import Env
 
 from antivirus_service.webserver import Webserver
-from antivirus_service.handler import ScanFileHandler, ScanUrlHandler
-from antivirus_service.consumer import ScanFileConsumer, ScanUrlConsumer
+from antivirus_service.handler import ScanFileHandler
+from antivirus_service.consumer import ScanFileConsumer
 
 
 class AntivirusSettings(object):
@@ -19,6 +19,7 @@ class AntivirusSettings(object):
         env = Env()
         with env.prefixed(self.env.upper() + "_"):
             self.config[self.env] = {}
+            self.config[self.env]['download_retry_count'] = env.int("DOWNLOAD_RETRY_COUNT", 3)
             param = "clamd"
             with env.prefixed(param.upper() + "_"):
                 self.config[self.env][param] = {}
@@ -65,35 +66,25 @@ def cli(ctx, env, debug):
 @click.pass_context
 def scan_file(ctx):
     """Run Antivirus Service - listen on message queue"""
+    consumer = None
     try:
         handler = ScanFileHandler(ctx.obj)
         consumer = ScanFileConsumer(ctx.obj, handler)
         consumer.run()
     except KeyboardInterrupt:
-        consumer.stop()
-
-
-@cli.command()
-@click.pass_context
-def scan_url(ctx):
-    """Run Antivirus Service - listen on message queue"""
-    try:
-        handler = ScanUrlHandler(ctx.obj)
-        consumer = ScanUrlConsumer(ctx.obj, handler)
-        consumer.run()
-    except KeyboardInterrupt:
-        consumer.stop()
+        consumer and consumer.stop()
 
 
 @cli.command()
 @click.pass_context
 def webserver(ctx):
     """Run Antivirus Service - webserver"""
+    web_server = None
     try:
-        webserver = Webserver(ctx.obj)
-        webserver.run()
+        web_server = Webserver(ctx.obj)
+        web_server.run()
     except KeyboardInterrupt:
-        webserver.stop()
+        web_server and web_server.stop()
 
 
 def main():

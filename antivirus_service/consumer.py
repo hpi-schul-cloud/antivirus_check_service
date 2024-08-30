@@ -49,9 +49,3 @@ class ScanFileConsumer(ScanConsumer):
     def __init__(self, settings, handler):
         super().__init__(settings, handler)
         self.amqp_queue = self.amqp_config['scan_file']['queue']
-
-
-class ScanUrlConsumer(ScanConsumer):
-    def __init__(self, settings, handler):
-        super().__init__(settings, handler)
-        self.amqp_queue = self.amqp_config['scan_url']['queue']
