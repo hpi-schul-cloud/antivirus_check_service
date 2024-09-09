@@ -31,10 +31,6 @@ class AntivirusSettings(object):
             with env.prefixed(param.upper() + "_"):
                 self.config[self.env][param] = {}
                 self.config[self.env][param]['auth_users'] = env.list("AUTH_USERS")
-            param = "virustotal"
-            with env.prefixed(param.upper() + "_"):
-                self.config[self.env][param] = {}
-                self.config[self.env][param]['api_key'] = env.list("API_KEY")
             param = "amqp"
             with env.prefixed(param.upper() + "_"):
                 self.config[self.env][param] = {}
@@ -44,10 +40,6 @@ class AntivirusSettings(object):
                     self.config[self.env][param]['scan_file'] = {}
                     self.config[self.env][param]['scan_file']['queue'] = env("QUEUE", "scan_file_v2")
                     self.config[self.env][param]['scan_file']['routing_key'] = env("ROUTING_KEY", "scan_file_v2")
-                with env.prefixed("SCAN_URL_"):
-                    self.config[self.env][param]['scan_url'] = {}
-                    self.config[self.env][param]['scan_url']['queue'] = env("QUEUE", "scan_url")
-                    self.config[self.env][param]['scan_url']['routing_key'] = env("ROUTING_KEY", "scan_url")
 
         loglevel = logging.INFO if debug else logging.ERROR
         logging.basicConfig(level=loglevel)
