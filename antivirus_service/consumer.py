@@ -36,6 +36,7 @@ class ScanConsumer(object):
         self.connection = pika.BlockingConnection(params)
 
         channel = self.connection.channel()
+        channel.basic_qos(1, 1)
         channel.queue_declare(self.amqp_queue, durable=True)
         channel.queue_bind(self.amqp_queue, self.exchange)
         channel.basic_consume(self.amqp_queue, self._callback)
