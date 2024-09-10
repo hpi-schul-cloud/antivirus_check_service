@@ -1,6 +1,6 @@
 # Antivirus Check Service
 
-The __Antivirus Check Service__ provides the ability to scan files with a locally installed clamav daemon. In addition, the service offers a URL scan using [virustotal](https://www.virustotal.com).
+The __Antivirus Check Service__ provides the ability to scan files with a locally installed clamav daemon.
 The __Antivirus Check Service__ processes incoming scan requests and sends the scan result to a specified web hook.
 
 ## Usage
@@ -24,21 +24,6 @@ A GET request to `https://<antivirus-check-service>/` gives a detailed usage api
         "callback_uri": {
             "type": "string",
             "description": "Complete uri to the callback uri"
-        },
-    }
-},
-"scan url request": {
-    "description": "Scan Url (using virustotal), report back to given webhook Uri",
-    "path": "/scan/url",
-    "method": "POST",
-    "params": {
-        "url": {
-            "type": "string",
-            "description": "Url to scan using virustotal"
-        },
-        "callback_uri": {
-            "type": "string",
-            "description": "Complete Uri to the callback uri"
         },
     }
 },
@@ -71,27 +56,12 @@ Authenticate and publish a message to the regarding queue using the routing_key:
     }
     ~~~
 
-#### scan url:
- - routing key: `scan_url`
- - message:
-    ~~~json
-    {
-      "url": "https://<url-to-be-scanned>",
-      "callback_uri": "https://<uri-to-report-endpoint>"
-    }
-    ~~~
-
 ### Reports
 The reports are PUT requests to the given webhook Uri. The payload differs reagrding the scan type.
 
 #### scan file payload
 ~~~json
 {"virus_detected": "<true|false>", "virus_signature": "<null|signature name>"}
-~~~
-
-#### scan url payload
-~~~json
-{"blacklisted": "<true|false>", "full_report": "<virustotal's full report>"}
 ~~~
 
 ### Error
@@ -102,21 +72,6 @@ If an error occures the __Antivirus Check Service__ will try to send an error pa
 
 ## CONFIGURATION
 
-  The configurate is taken via env vars.
+The configurate is taken via env vars.
 
-### VirusTotal
-An API-Key is needed to use virustotal. To get this, an account on virustotal has to be created. The API-Key can be found in the account's settings.
 
-### Docker-Compose
-- To start all services, you only have to to run `docker-compose up -d`
-  This will start all docker container:
-  - clamav
-  - rabbitmq
-  - webserver
-  - scanfile
-  - scanurl
-  
-  The last three container will restart until rabbitmq is running properly (ca. 10 seconds)
-
-- __BE PATIENT!__ At the first run, freshclam has to download all signatures, which can take a 
-  while and prevent clamav-daemon from working.

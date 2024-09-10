@@ -37,7 +37,6 @@ class Webserver(object):
         app = web.Application()
         app.router.add_get('/', self.index)
         app.router.add_post('/scan/file', self.handle_file)
-        app.router.add_post('/scan/url', self.handle_uri)
         app.router.add_get('/antivirus-version', self.handle_version)
         self.app = app
 
@@ -61,21 +60,6 @@ class Webserver(object):
                     "callback_uri": {
                         "type": "string",
                         "description": "Complete uri to the callback uri"
-                    },
-                }
-            },
-            "scan url request": {
-                "description": "Scan Url (using virustotal), report back to given webhook Uri",
-                "path": "/scan/url",
-                "method": "POST",
-                "params": {
-                    "url": {
-                        "type": "string",
-                        "description": "Url to scan using virustotal"
-                    },
-                    "callback_uri": {
-                        "type": "string",
-                        "description": "Complete Uri to the callback uri"
                     },
                 }
             },
@@ -105,29 +89,8 @@ class Webserver(object):
             logging.error('error', exc_info=True)
             return web.Response(status=500, text=str(e))
 
-    @auth_required
-    async def handle_uri(self, request):
-        body = await request.read()
-        try:
-            payload = json.loads(bytes(body).decode('utf-8'))
-            assert 'url' in payload
-            assert 'callback_uri' in payload
-
-            self.enqueue_scan_url_request(body)
-            return web.Response(status=202,
-                                text='The request has been accepted for processing, but the processing has not been completed.')
-
-        except AssertionError:
-            return web.Response(status=422, text='Unprocessable Entity: missing parameter')
-        except Exception as e:
-            logging.error('error', exc_info=True)
-            return web.Response(status=500, text=str(e))
-
     def enqueue_scan_file_request(self, body):
         self.send(body, self.amqp_config['scan_file']['routing_key'])
-
-    def enqueue_scan_url_request(self, body):
-        self.send(body, routing_key=self.amqp_config['scan_url']['routing_key'])
 
     def send(self, body, routing_key):
         params = pika.URLParameters(self.amqp_config['url'])
