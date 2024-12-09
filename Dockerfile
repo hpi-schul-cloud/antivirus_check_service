@@ -1,4 +1,4 @@
-FROM docker.io/python:3.12-alpine
+FROM docker.io/python:3.13-alpine
 
 ENV LC_ALL=C.UTF-8
 ENV LANG C.UTF-8
