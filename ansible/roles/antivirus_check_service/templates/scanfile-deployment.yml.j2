@@ -50,6 +50,8 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         runAsNonRoot: true
+      os:
+        name: linux
       containers:
       - name: antivirus-scanfile
         image: {{ ANTIVIRUS_CHECK_SERVICE_IMAGE }}:{{ ANTIVIRUS_CHECK_SERVICE_IMAGE_TAG }}
