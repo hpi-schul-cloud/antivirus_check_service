@@ -1,7 +1,7 @@
 FROM docker.io/python:3.14-alpine
 
 ENV LC_ALL=C.UTF-8
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 WORKDIR /usr/src/app
 COPY requirements.txt setup.py ./
