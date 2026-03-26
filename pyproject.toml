@@ -1,0 +1,16 @@
+[project]
+name = "antivirus_check_service"
+version = "0.1.0"
+description = "tbd"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+	"requests==2.32.5",
+	"click==8.3.1",
+	"pyClamd==0.4.0",
+	"aiohttp==3.13.3",
+	"PyYAML==6.0.3",
+	"pika==1.3.2",
+	"aio_pika==9.6.1",
+	"environs==14.6.0"
+]
