@@ -14,9 +14,9 @@ class ScanHandler(object):
         self.download_retry_count = self.config['download_retry_count']
 
     def handle_error_message(self, payload, error_message):
-        '''
+        """
         handles error messages
-        '''
+        """
         logging.error('--- Start error message callback ---')
         logging.error('Error message was: {}'.format(error_message))
         access_token = payload.get('access_token', None)
@@ -90,9 +90,9 @@ class ScanFileHandler(ScanHandler):
         return payload
 
     def handle_message(self, payload):
-        '''
+        """
         handles antivirus scan file requests
-        '''
+        """
         logging.info('------------- INCOMING MESSAGE -------------')
         logging.info(payload)
 
