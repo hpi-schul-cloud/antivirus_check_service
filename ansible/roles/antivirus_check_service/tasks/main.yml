@@ -42,3 +42,11 @@
       - SCALED_ANTIVIRUS_SCANFILE_WORKER_ENABLED is defined and SCALED_ANTIVIRUS_SCANFILE_WORKER_ENABLED|bool
     tags:
       - keda
+
+  - name: Add antivirus_check_service default allow network policy
+    kubernetes.core.k8s:
+      kubeconfig: ~/.kube/config
+      namespace: "{{ NAMESPACE }}"
+      template: default-allow-networkpolicy.yml.j2
+    tags:
+      - networkPolicy
