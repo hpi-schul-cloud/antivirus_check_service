@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "tbd"
 requires-python = ">=3.14"
 dependencies = [
-	"requests==2.33.0",
+	"requests==2.33.1",
 	"click==8.3.1",
 	"pyClamd==0.4.0",
 	"aiohttp==3.13.3",
