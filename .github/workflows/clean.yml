@@ -3,6 +3,9 @@ name: Clean Deployment
 
 on: delete
 
+permissions:
+  contents: read
+
 jobs:
   clean:
     uses: hpi-schul-cloud/dof_app_deploy/.github/workflows/clean_workflow.yml@main

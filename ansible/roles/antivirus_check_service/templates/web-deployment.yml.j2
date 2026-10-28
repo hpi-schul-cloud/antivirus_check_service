@@ -62,6 +62,8 @@ spec:
           containerPort: {{ ANTIVIRUS_PORT }}
           protocol: TCP
         envFrom:
+        - configMapRef:
+            name: antivirus-configmap
         - secretRef:
             name: antivirus-secret
         resources:

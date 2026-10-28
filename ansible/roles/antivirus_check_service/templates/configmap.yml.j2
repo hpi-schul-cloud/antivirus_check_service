@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: antivirus-configmap
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: antivirus
+data:
+  DEVELOP_DOWNLOAD_ALLOWED_ORIGINS: "{{ ANTIVIRUS_DOWNLOAD_ALLOWED_ORIGINS }}"
+  DEVELOP_CALLBACK_ALLOWED_ORIGINS: "{{ ANTIVIRUS_CALLBACK_ALLOWED_ORIGINS }}"

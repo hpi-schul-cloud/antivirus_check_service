@@ -20,6 +20,8 @@ class AntivirusSettings(object):
         with env.prefixed(self.env.upper() + "_"):
             self.config[self.env] = {}
             self.config[self.env]['download_retry_count'] = env.int("DOWNLOAD_RETRY_COUNT", 3)
+            self.config[self.env]['download_allowed_origins'] = env.list("DOWNLOAD_ALLOWED_ORIGINS", [])
+            self.config[self.env]['callback_allowed_origins'] = env.list("CALLBACK_ALLOWED_ORIGINS", [])
             param = "clamd"
             with env.prefixed(param.upper() + "_"):
                 self.config[self.env][param] = {}

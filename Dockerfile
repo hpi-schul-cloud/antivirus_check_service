@@ -5,7 +5,7 @@ ENV UV_LINK_MODE=copy
 WORKDIR /app
 
 ENV UV_PYTHON_INSTALL_DIR=/opt/python
-RUN uv python install 3.14
+RUN uv python install 3.15
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev --no-editable

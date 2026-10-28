@@ -8,6 +8,7 @@ from aiohttp import web
 from functools import wraps
 
 from antivirus_service.clamd import Clamd
+from antivirus_service.url_validation import validate_url
 
 
 def auth_required(f):
@@ -28,6 +29,8 @@ class Webserver(object):
     def __init__(self, settings):
         self.amqp_config = settings.config[settings.env]['amqp']
         self.clamd_config = settings.config[settings.env]['clamd']
+        self.download_allowed_origins = settings.config[settings.env]['download_allowed_origins']
+        self.callback_allowed_origins = settings.config[settings.env]['callback_allowed_origins']
         self.auth_keys = [
             base64.b64encode(bytes(entry, 'utf-8')).decode('ascii')
             for entry in settings.config[settings.env]['webserver']['auth_users']]
@@ -46,6 +49,7 @@ class Webserver(object):
     def stop(self):
         self.app.loop.close()
 
+    @auth_required
     async def index(self, request):
         doc = {
             "scan file request": {
@@ -74,20 +78,27 @@ class Webserver(object):
     @auth_required
     async def handle_file(self, request):
         body = await request.read()
-        logging.info("Incoming request with body: {}".format(body))
         try:
             payload = json.loads(bytes(body).decode('utf-8'))
-            assert 'download_uri' in payload
-            assert 'callback_uri' in payload
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return web.Response(status=422, text='Unprocessable Entity: invalid JSON')
 
+        if not isinstance(payload, dict) or 'download_uri' not in payload or 'callback_uri' not in payload:
+            return web.Response(status=422, text='Unprocessable Entity: missing parameter')
+
+        try:
+            validate_url(payload['download_uri'], self.download_allowed_origins)
+            validate_url(payload['callback_uri'], self.callback_allowed_origins)
+        except ValueError:
+            return web.Response(status=422, text='Unprocessable Entity: invalid URL')
+
+        try:
             self.enqueue_scan_file_request(body)
             return web.Response(status=202)
 
-        except AssertionError:
-            return web.Response(status=422, text='Unprocessable Entity: missing parameter')
-        except Exception as e:
+        except Exception:
             logging.error('error', exc_info=True)
-            return web.Response(status=500, text=str(e))
+            return web.Response(status=500, text='Internal Server Error')
 
     def enqueue_scan_file_request(self, body):
         self.send(body, self.amqp_config['scan_file']['routing_key'])
