@@ -10,7 +10,8 @@ nbproject
 *.pyc
 *egg-info
 *.log
-tests
+!tests/
+!tests/test_webserver.py
 secrets
 *.swp
 venv

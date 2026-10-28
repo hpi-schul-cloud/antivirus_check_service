@@ -85,9 +85,9 @@ class Webserver(object):
 
         except AssertionError:
             return web.Response(status=422, text='Unprocessable Entity: missing parameter')
-        except Exception as e:
+        except Exception:
             logging.error('error', exc_info=True)
-            return web.Response(status=500, text=str(e))
+            return web.Response(status=500, text='Internal Server Error')
 
     def enqueue_scan_file_request(self, body):
         self.send(body, self.amqp_config['scan_file']['routing_key'])
