@@ -58,6 +58,8 @@ spec:
         imagePullPolicy: IfNotPresent
         args: ["scan-file"]
         envFrom:
+        - configMapRef:
+            name: antivirus-configmap
         - secretRef:
             name: antivirus-secret
         volumeMounts:

@@ -1,3 +1,12 @@
+  - name: Antivirus ConfigMap
+    kubernetes.core.k8s:
+      kubeconfig: ~/.kube/config
+      namespace: "{{ NAMESPACE }}"
+      template: configmap.yml.j2
+    tags:
+      - configmap
+      - deployment
+
   - name: Webserver Service
     kubernetes.core.k8s:
       kubeconfig: ~/.kube/config 
